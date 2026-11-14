@@ -1,0 +1,6 @@
+{
+  "appId": "com.turbobolides.jeu",
+  "appName": "Turbo Bolides",
+  "webDir": "www",
+  "android": { "backgroundColor": "#0b1622" }
+}

@@ -1,0 +1,23 @@
+// Construit www/index.html (page autonome, three.js embarqué localement pour jouer hors ligne)
+const fs = require('fs');
+const path = require('path');
+const www = path.join(__dirname, 'www');
+fs.mkdirSync(www, { recursive: true });
+let game = fs.readFileSync(path.join(__dirname, 'src/game.html'), 'utf8');
+game = game.replace('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'three.min.js');
+const html = `<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1622">
+${game.split('<div id="stage">')[0]}
+</head>
+<body>
+<div id="stage">${game.split('<div id="stage">')[1]}
+</body>
+</html>
+`;
+fs.writeFileSync(path.join(www, 'index.html'), html);
+fs.copyFileSync(path.join(__dirname, 'node_modules/three/build/three.min.js'), path.join(www, 'three.min.js'));
+console.log('www/ prêt');
