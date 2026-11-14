@@ -41,3 +41,12 @@ Après chaque modification de `src/game.html` : `npm run android:sync`.
 ## Publier sur le Play Store
 
 Dans Android Studio : *Build → Generate Signed App Bundle* (fichier `.aab`), puis envoie-le dans la Play Console. Change d'abord l'`appId` dans `capacitor.config.json` si besoin (il ne peut plus changer après publication).
+
+## iPhone
+
+Deux possibilités :
+
+1. **Version web (le plus simple)** : ouvrir https://turbo-bolides.netlify.app dans Safari, bouton Partager, puis **Sur l'écran d'accueil**. Le jeu s'ouvre alors en plein écran comme une app, avec son icône.
+2. **App iOS native** : workflow « Construire l'app iOS » (onglet Actions, bouton *Run workflow*). Il produit `TurboBolides-non-signe.ipa`.
+   - Ce fichier n'est pas signé : pour l'installer sur un iPhone, il faut le signer avec un identifiant Apple, par exemple avec Sideloadly ou AltStore depuis un PC (gratuit, l'app doit être réinstallée tous les 7 jours).
+   - Pour une installation durable ou l'App Store / TestFlight, il faut un compte Apple Developer (99 €/an) et ajouter la signature au workflow.

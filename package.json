@@ -7,13 +7,16 @@
     "build": "node build.js",
     "android:init": "npm run build && npx cap add android && node scripts/patch-android.js",
     "android:sync": "npm run build && npx cap sync android",
-    "apk": "npm run android:sync && cd android && ./gradlew assembleDebug"
+    "apk": "npm run android:sync && cd android && ./gradlew assembleDebug",
+    "ios:init": "npm run build && npx cap add ios",
+    "ios:sync": "npm run build && npx cap sync ios"
   },
   "dependencies": {
     "@capacitor/android": "6.2.0",
     "@capacitor/cli": "6.2.0",
     "@capacitor/core": "6.2.0",
     "peerjs": "^1.5.4",
-    "three": "0.128.0"
+    "three": "0.128.0",
+    "@capacitor/ios": "6.2.0"
   }
 }

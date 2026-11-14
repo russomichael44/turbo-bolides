@@ -12,6 +12,13 @@ const html = `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0b1622">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Turbo Bolides">
 ${game.split('<div id="stage">')[0]}
 </head>
 <body>
@@ -22,4 +29,5 @@ ${game.split('<div id="stage">')[0]}
 fs.writeFileSync(path.join(www, 'index.html'), html);
 fs.copyFileSync(path.join(__dirname, 'node_modules/three/build/three.min.js'), path.join(www, 'three.min.js'));
 fs.copyFileSync(path.join(__dirname, 'node_modules/peerjs/dist/peerjs.min.js'), path.join(www, 'peerjs.min.js'));
+for (const f of ['manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png']) fs.copyFileSync(path.join(__dirname, 'assets', f), path.join(www, f));
 console.log('www/ prêt');
