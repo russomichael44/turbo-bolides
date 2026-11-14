@@ -7,6 +7,7 @@ Jeu de course de karts en 3D pour Android : 6 pilotes, dérapages avec mini-turb
 - **Solo** contre des bots, ou **entre amis** en ligne (jusqu'à 6 joueurs) avec un code d'invitation de 5 caractères. Dans le salon, l'hôte ajoute ou retire chaque bot (bouton ×).
 - **Course** (2, 3 ou 5 tours), **Bataille** (3 cœurs, dernier en piste), **Ballons** (dans l'arène : 3 ballons, on vole un ballon en frôlant un kart plus lent, un objet reçu en fait éclater un), **Patate chaude** (une bombe passe de kart en kart au contact).
 - **Dérapage** : maintenir le bouton Dérapage (ou Espace) en tournant, puis relâcher pour le mini-turbo.
+- **7 objets** : Turbo, Triple turbo (3 charges), Étoile filante (7 s d'invincibilité, plus rapide, fait tourner les karts touchés), Fumigène (encre sur l'écran des karts derrière), Flaque d'huile, Missile, Bouclier.
 - **6 personnages** (Flash le renard, Boulon le robot, Gloups la grenouille, Bambou le panda, Glaçon le pingouin, Zorb l'extraterrestre) en 3 catégories de poids, et **4 karts** (Classique, Fusée, Buggy, Bolide). Chaque combinaison change la vitesse, l'accélération, la maniabilité et le tout-terrain. Le pseudo du joueur reste affiché pendant la course.
 - **4 circuits** : Circuit des Pins (forêt), Canyon Rouge (désert), Station Givrée (neige), Baie des Palmiers (plage).
 - Options : sens inverse, objets en folie, niveau des bots.
