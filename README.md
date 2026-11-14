@@ -45,3 +45,7 @@ Dans Android Studio : *Build → Generate Signed App Bundle* (fichier `.aab`), p
 ## iPhone
 
 Ouvrir https://turbo-bolides.netlify.app dans Safari, bouton Partager, puis **Sur l'écran d'accueil**. Le jeu s'ouvre alors en plein écran comme une app, avec son icône.
+
+## Bolide Rush (jeu bonus)
+
+Jeu d'arcade 2D sur autoroute de nuit : remonter le trafic le plus loin possible, ramasser l'essence, frôler les voitures pour des bonus, nitro pour pulvériser le trafic. Source : `src/rush.html`, servi sur https://turbo-bolides.netlify.app/rush/ après `npm run build`.
