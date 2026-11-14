@@ -4,8 +4,9 @@ Jeu de course de karts en 3D pour Android : 6 pilotes, dérapages avec mini-turb
 
 ## Modes
 
-- **Solo** contre 5 bots, ou **entre amis** en ligne (jusqu'à 6 joueurs) avec un code d'invitation de 5 caractères. Les places libres peuvent être complétées par des bots.
-- **Course** (2, 3 ou 5 tours), **Bataille** (3 cœurs, dernier en piste), **Patate chaude** (une bombe passe de kart en kart au contact).
+- **Solo** contre des bots, ou **entre amis** en ligne (jusqu'à 6 joueurs) avec un code d'invitation de 5 caractères. Dans le salon, l'hôte ajoute ou retire chaque bot (bouton ×).
+- **Course** (2, 3 ou 5 tours), **Bataille** (3 cœurs, dernier en piste), **Ballons** (dans l'arène : 3 ballons, on vole un ballon en frôlant un kart plus lent, un objet reçu en fait éclater un), **Patate chaude** (une bombe passe de kart en kart au contact).
+- **Dérapage** : garder une flèche enfoncée dans un virage lance la glisse ; la relâcher déclenche le mini-turbo. Le bouton Dérapage marche aussi.
 - Options : sens inverse, objets en folie, niveau des bots.
 - **Classement** : points par manche (10, 7, 5, 3, 2, 1), classement de la soirée, classement « entre amis » cumulé et records personnels (enregistrés sur l'appareil).
 
