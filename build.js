@@ -4,7 +4,8 @@ const path = require('path');
 const www = path.join(__dirname, 'www');
 fs.mkdirSync(www, { recursive: true });
 let game = fs.readFileSync(path.join(__dirname, 'src/game.html'), 'utf8');
-game = game.replace('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'three.min.js');
+game = game.replace('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'three.min.js')
+  .replace('https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js', 'peerjs.min.js');
 const html = `<!doctype html>
 <html lang="fr">
 <head>
@@ -20,4 +21,5 @@ ${game.split('<div id="stage">')[0]}
 `;
 fs.writeFileSync(path.join(www, 'index.html'), html);
 fs.copyFileSync(path.join(__dirname, 'node_modules/three/build/three.min.js'), path.join(www, 'three.min.js'));
+fs.copyFileSync(path.join(__dirname, 'node_modules/peerjs/dist/peerjs.min.js'), path.join(www, 'peerjs.min.js'));
 console.log('www/ prêt');
