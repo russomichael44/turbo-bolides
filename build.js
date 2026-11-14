@@ -31,23 +31,3 @@ fs.copyFileSync(path.join(__dirname, 'node_modules/three/build/three.min.js'), p
 fs.copyFileSync(path.join(__dirname, 'node_modules/peerjs/dist/peerjs.min.js'), path.join(www, 'peerjs.min.js'));
 for (const f of ['manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png']) fs.copyFileSync(path.join(__dirname, 'assets', f), path.join(www, f));
 console.log('www/ prêt');
-
-// Bolide Rush : jeu d'arcade 2D, servi sur /rush/
-const rush = fs.readFileSync(path.join(__dirname, 'src/rush.html'), 'utf8');
-fs.mkdirSync(path.join(www, 'rush'), { recursive: true });
-fs.writeFileSync(path.join(www, 'rush', 'index.html'), `<!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#12141b">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<style>body{margin:0}[hidden]{display:none!important}</style>
-</head>
-<body>
-${rush}
-</body>
-</html>
-`);
-console.log('www/rush/ prêt');
