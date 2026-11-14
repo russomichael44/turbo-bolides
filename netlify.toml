@@ -1,0 +1,7 @@
+# Version web du jeu (pour iPhone et navigateurs) : Netlify construit www/ depuis src/game.html
+[build]
+  command = "npm run build"
+  publish = "www"
+
+[build.environment]
+  NODE_VERSION = "20"

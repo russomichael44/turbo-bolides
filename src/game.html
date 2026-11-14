@@ -221,7 +221,7 @@ tr.me td{background:rgba(255,194,61,.12)}
       </div>
     </div>
     <p class="rot">Tourne ton téléphone à l'horizontale pour mieux voir la piste.</p>
-    <p class="help">L'accélération est automatique. Pour déraper, garde une flèche enfoncée dans un virage : le kart part en glisse tout seul. Relâche la flèche pour le mini-turbo (étincelles bleues, puis orange). Le bouton <b>Dérapage</b> marche aussi. Les cristaux donnent un objet : Turbo, Flaque d'huile, Missile ou Bouclier.</p>
+    <p class="help">L'accélération est automatique. Pour déraper, maintiens <b>Dérapage</b> (ou <b>Espace</b>) en tournant, puis relâche pour le mini-turbo (étincelles bleues, puis orange). Les cristaux donnent un objet : Turbo, Flaque d'huile, Missile ou Bouclier.</p>
   </div>
 </div>
 
@@ -1112,14 +1112,7 @@ function playerInput(k,dt){
   const kl=keys['arrowleft']||keys['a']||keys['q'],kr=keys['arrowright']||keys['d'];
   const steer=clamp(touch.steer+(kl?-1:0)+(kr?1:0),-1,1);
   const brake=touch.brake||keys['arrowdown']||keys['s'];
-  const btn=!!(touch.drift||keys[' ']||keys['shift']);
-  // Dérapage automatique : flèche maintenue à fond dans un virage = glisse ; flèche relâchée = mini-turbo
-  if(Math.abs(steer)>=.85&&k.speed>16&&!btn)k.lockT+=dt;else k.lockT=0;
-  if(!k.drift&&k.lockT<=.2)k.autoD=false;
-  let auto=false;
-  if(k.drift&&k.autoD){const r=steer*k.drift;if(r>.2)k.neutT=0;else k.neutT+=dt;auto=r>-.3&&k.neutT<.3;}
-  else if(k.lockT>.2){auto=true;k.autoD=true;k.neutT=0;}
-  return {steer,gas:!brake,brake,drift:btn||auto};
+  return {steer,gas:!brake,brake,drift:!!(touch.drift||keys[' ']||keys['shift'])};
 }
 function vibrate(ms){try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}}
 let wake=null;
