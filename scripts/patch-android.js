@@ -5,6 +5,16 @@ let x = fs.readFileSync(f, 'utf8');
 if (!x.includes('screenOrientation')) {
   x = x.replace('<activity', '<activity\n            android:screenOrientation="sensorLandscape"');
 }
+// Lien de retour après la connexion Google (turbobolides://auth?code=...)
+if (!x.includes('android:scheme="turbobolides"')) {
+  x = x.replace(/(<activity[\s\S]*?<\/intent-filter>)/, `$1
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="turbobolides" android:host="auth" />
+            </intent-filter>`);
+}
 fs.writeFileSync(f, x);
 const s = 'android/app/src/main/res/values/styles.xml';
 if (fs.existsSync(s)) {

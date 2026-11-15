@@ -11,7 +11,14 @@ const open = (name) => {
   };
 };
 
-const api = createApi({ accounts: open('accounts'), saves: open('saves'), config: open('config') });
+const api = createApi(
+  { accounts: open('accounts'), saves: open('saves'), config: open('config') },
+  {
+    // Identifiant client Google (public) : variable d'environnement GOOGLE_CLIENT_ID du site Netlify
+    googleClientId: () => Netlify.env.get('GOOGLE_CLIENT_ID') || '',
+    fetchJwks: async () => (await fetch('https://www.googleapis.com/oauth2/v3/certs')).json(),
+  },
+);
 
 export default async (req) => api.handle(req);
 

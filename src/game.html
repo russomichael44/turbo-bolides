@@ -181,6 +181,12 @@ td.pts{color:var(--ok);font-weight:800;text-align:right}
 td.mut{color:var(--muted)}
 tr.me td{background:rgba(255,194,61,.12)}
 .recbox{font-family:var(--display);font-size:clamp(20px,5.2vw,30px);letter-spacing:.08em;text-align:center;color:var(--sun);background:rgba(255,194,61,.1);border:2px dashed rgba(255,194,61,.6);border-radius:14px;padding:16px 8px;word-break:break-all;-webkit-user-select:text;user-select:text}
+.gbox{display:flex;flex-direction:column;align-items:center;gap:10px}
+#acGoogle{min-height:44px;display:flex;justify-content:center;width:100%}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:360px;border:1px solid #8e918f;border-radius:999px;background:#131314;color:#e3e3e3;font-weight:600;font-size:15px;padding:11px 16px}
+.gbtn svg{width:20px;height:20px}
+.or{display:flex;align-items:center;gap:10px;width:100%;margin:0;color:var(--muted);font-size:12px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
 .meline{display:flex;flex-direction:column;gap:2px}.meline b{font-size:18px;overflow-wrap:anywhere}
 .delbox{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
 .homehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
@@ -372,8 +378,13 @@ tr.me td{background:rgba(255,194,61,.12)}
     <h2 class="logo">Compte</h2>
     <p class="sub" id="acSub"></p>
     <div id="acOut" class="stack">
+      <div id="acGoogleBox" class="gbox" hidden>
+        <div id="acGoogle"></div>
+        <button class="gbtn" id="acGoogleApp" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Continuer avec Google</button>
+        <p class="or"><span>ou avec ton e-mail</span></p>
+      </div>
       <div class="seg" id="acTabs"><button id="acTabLogin" aria-pressed="true">Connexion</button><button id="acTabReg" aria-pressed="false">Créer un compte</button></div>
-      <div><label class="lbl" for="acEmail">E-mail</label><input class="txt" id="acEmail" type="email" inputmode="email" autocomplete="email" maxlength="120" autocapitalize="none" spellcheck="false"></div>
+      <div id="acEmailBox"><label class="lbl" for="acEmail">E-mail</label><input class="txt" id="acEmail" type="email" inputmode="email" autocomplete="email" maxlength="120" autocapitalize="none" spellcheck="false"></div>
       <div id="acRecBox" hidden><label class="lbl" for="acRec">Code de secours</label><input class="txt" id="acRec" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX"></div>
       <div><label class="lbl" for="acPass" id="acPassLbl">Mot de passe</label><input class="txt" id="acPass" type="password" autocomplete="current-password" maxlength="100"></div>
       <button class="go" id="acGo">Se connecter</button>
@@ -388,8 +399,9 @@ tr.me td{background:rgba(255,194,61,.12)}
       <div class="meline"><span class="lbl">Connecté en tant que</span><b id="acMail"></b></div>
       <p class="help">Ton pseudo, ton personnage, ton kart, tes crédits, tes boosters et tes records sont sauvegardés en ligne. Connecte-toi avec le même e-mail sur un autre appareil pour les retrouver.</p>
       <button class="ghost" id="acLogout">Se déconnecter</button>
-      <div class="delbox"><label class="lbl" for="acDelPass">Supprimer le compte</label><input class="txt" id="acDelPass" type="password" autocomplete="current-password" maxlength="100" placeholder="Mot de passe"><button class="ghost danger" id="acDel">Supprimer mon compte</button></div>
+      <div class="delbox"><label class="lbl" for="acDelPass" id="acDelLbl">Supprimer le compte</label><input class="txt" id="acDelPass" type="password" autocomplete="current-password" maxlength="100" placeholder="Mot de passe"><button class="ghost danger" id="acDel">Supprimer mon compte</button></div>
     </div>
+    <a class="go" id="acBackApp" hidden style="text-align:center;text-decoration:none">Revenir dans l'app</a>
     <p class="err" id="acErr" hidden></p>
     <button class="ghost" id="acBack">Retour</button>
   </div>
@@ -1793,7 +1805,9 @@ function renderAccount(){
   $('#acForgot').hidden=view!=='login';$('#acForgot').textContent='Mot de passe oublié ?';
   $('#acSub').textContent=view==='login'?'Connecte-toi pour retrouver tes crédits, boosters et records sur tous tes appareils.':view==='register'?'Tes crédits, boosters, records, personnage et kart actuels seront envoyés sur ton compte.':view==='reset'?'Entre ton e-mail, le code de secours reçu à l\'inscription et un nouveau mot de passe.':view==='recovery'?'Compte prêt. Dernière chose importante :':'Ta progression est sauvegardée en ligne.';
   if(view==='recovery')$('#acCode').textContent=recShown;
-  if(view==='me'){$('#acMail').textContent=auth.email;$('#acDelPass').value='';$('#acDel').textContent='Supprimer mon compte';acDelArm=false;}
+  if(view==='me'){$('#acMail').textContent=auth.email+(auth.google?' (Google)':'');$('#acDelPass').value='';$('#acDel').textContent='Supprimer mon compte';acDelArm=false;
+    $('#acDelPass').type=auth.google?'text':'password';$('#acDelPass').placeholder=auth.google?'Écris SUPPRIMER':'Mot de passe';$('#acDelLbl').textContent=auth.google?'Supprimer le compte (écris SUPPRIMER)':'Supprimer le compte';}
+  if(view==='login'||view==='register')setupGoogle();else $('#acGoogleBox').hidden=true;
 }
 let acDelArm=false;
 function openAccount(){hideScreens();$('#account').hidden=false;acError('');if(!auth&&acView==='me')acView='login';if(auth&&acView!=='recovery')acView='me';renderAccount();}
@@ -1827,13 +1841,74 @@ $('#acNoted').addEventListener('click',()=>{recShown='';acView='me';renderAccoun
 $('#acLogout').addEventListener('click',()=>{setAuth(null);acView='login';renderAccount();toast('Déconnecté. Ta progression reste sur cet appareil.');});
 $('#acDel').addEventListener('click',async()=>{
   if(!acDelArm){acDelArm=true;$('#acDel').textContent='Confirmer la suppression';return;}
-  const pass=$('#acDelPass').value;if(!pass)return acError('Entre ton mot de passe pour confirmer.');
-  const r=await apiCall('delete',{password:pass});
+  const pass=$('#acDelPass').value;if(!pass)return acError(auth&&auth.google?'Écris SUPPRIMER pour confirmer.':'Entre ton mot de passe pour confirmer.');
+  const r=await apiCall('delete',auth&&auth.google?{confirm:pass.trim().toUpperCase()}:{password:pass});
   if(!r.ok){acDelArm=false;$('#acDel').textContent='Supprimer mon compte';return acError(r.data.error||'Erreur. Réessaie.');}
   setAuth(null);acView='login';renderAccount();toast('Compte supprimé. Ta progression reste sur cet appareil.');
 });
 updateAccountBtn();
 if(auth)pullAccount();
+/* ---------- Connexion Google ---------- */
+const SITE=window.TB_SITE||'https://turbo-bolides.netlify.app';
+const isApp=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+let GID=undefined,gisLoaded=false;
+const appChallenge=(()=>{try{const c=new URLSearchParams(location.search).get('app');return c&&/^[A-Za-z0-9_-]{43}$/.test(c)?c:null;}catch(e){return null;}})();
+async function googleConfig(){if(GID!==undefined)return GID;const r=await apiCall('config',{});GID=r.ok&&r.data.google?r.data.google:null;if(!r.ok)GID=undefined;return GID||null;}
+function loadGis(){return new Promise((res,rej)=>{if(window.google&&window.google.accounts&&window.google.accounts.id)return res();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=()=>res();s.onerror=()=>rej();document.head.appendChild(s);});}
+async function setupGoogle(){
+  const box=$('#acGoogleBox');box.hidden=true;
+  const id=await googleConfig();if(!id)return;
+  box.hidden=false;
+  if(isApp){$('#acGoogleApp').hidden=false;$('#acGoogle').hidden=true;return;}
+  $('#acGoogleApp').hidden=true;$('#acGoogle').hidden=false;
+  try{await loadGis();}catch(e){box.hidden=true;return;}
+  if(!gisLoaded){window.google.accounts.id.initialize({client_id:id,callback:onGoogleCredential,ux_mode:'popup',auto_select:false});gisLoaded=true;}
+  const w=Math.min(360,Math.max(220,$('#acOut').clientWidth||300));
+  $('#acGoogle').innerHTML='';window.google.accounts.id.renderButton($('#acGoogle'),{theme:'filled_black',size:'large',text:'continue_with',shape:'pill',width:w,locale:'fr'});
+}
+async function onGoogleCredential(resp){
+  acError('');
+  if(appChallenge){
+    const r=await apiCall('google',{credential:resp.credential,challenge:appChallenge});
+    if(!r.ok)return acError(r.data.error||'Erreur. Réessaie.');
+    const link='turbobolides://auth?code='+encodeURIComponent(r.data.code);
+    $('#acSub').textContent='C\'est bon ! Retour dans l\'app Turbo Bolides…';$('#acOut').hidden=true;
+    $('#acBackApp').href=link;$('#acBackApp').hidden=false;location.href=link;return;
+  }
+  const r=await apiCall('google',{credential:resp.credential,save:collectSave()});
+  if(!r.ok)return acError(r.data.error||'Erreur. Réessaie.');
+  setAuth({token:r.data.token,email:r.data.email,google:true});
+  if(r.data.created)syncUp();else applySave(r.data.save);
+  acView='me';renderAccount();toast(r.data.created?'Compte créé avec Google':'Connecté avec Google');
+}
+// App Android : Google refuse la connexion dans l'app elle-même, on passe par le navigateur du téléphone
+async function googleViaBrowser(){
+  const v=new Uint8Array(32);crypto.getRandomValues(v);
+  const verifier=btoa(String.fromCharCode(...v)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  const dig=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier)));
+  const challenge=btoa(String.fromCharCode(...dig)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  store.set('tb-gv',verifier);
+  toast('Connexion dans ton navigateur…');
+  location.href=SITE+'/?app='+challenge;
+}
+async function finishAppLogin(url){
+  let code=null;try{const u=new URL(url);if(u.protocol!=='turbobolides:')return;code=u.searchParams.get('code');}catch(e){return;}
+  if(!code)return;const verifier=store.get('tb-gv','');store.set('tb-gv',null);
+  const r=await apiCall('handoff',{code,verifier});
+  openAccount();
+  if(!r.ok)return acError(r.data.error||'Erreur. Réessaie.');
+  setAuth({token:r.data.token,email:r.data.email,google:true});
+  if(r.data.created)syncUp();else applySave(r.data.save);
+  acView='me';renderAccount();toast(r.data.created?'Compte créé avec Google':'Connecté avec Google');
+}
+$('#acGoogleApp').addEventListener('click',googleViaBrowser);
+if(isApp&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App){
+  const A=window.Capacitor.Plugins.App;
+  A.addListener('appUrlOpen',ev=>finishAppLogin(ev.url));
+  A.getLaunchUrl().then(r=>{if(r&&r.url)finishAppLogin(r.url);}).catch(()=>{});
+}
+if(appChallenge){openAccount();$('#acTabs').hidden=true;$('#acEmailBox').hidden=true;$('#acSub').textContent='Connecte-toi avec Google pour revenir dans l\'app Turbo Bolides.';}
+
 
 /* ---------- Boucle ---------- */
 function playerFinished(){const r=R.me.rank+1;showMsg(r===1?'Victoire !':'Arrivée · '+ordTxt(r),2.6);sfx(r===1?880:520,.5,'triangle',.15);vibrate(200);setBanner('Arrivée ! Pilote automatique activé.');}
