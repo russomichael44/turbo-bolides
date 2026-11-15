@@ -180,6 +180,9 @@ td.nm{white-space:normal;overflow-wrap:anywhere}
 td.pts{color:var(--ok);font-weight:800;text-align:right}
 td.mut{color:var(--muted)}
 tr.me td{background:rgba(255,194,61,.12)}
+.recbox{font-family:var(--display);font-size:clamp(20px,5.2vw,30px);letter-spacing:.08em;text-align:center;color:var(--sun);background:rgba(255,194,61,.1);border:2px dashed rgba(255,194,61,.6);border-radius:14px;padding:16px 8px;word-break:break-all;-webkit-user-select:text;user-select:text}
+.meline{display:flex;flex-direction:column;gap:2px}.meline b{font-size:18px;overflow-wrap:anywhere}
+.delbox{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
 .homehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .wallet{display:flex;align-items:center;gap:6px;background:rgba(255,194,61,.12);border:1px solid rgba(255,194,61,.45);border-radius:999px;padding:5px 12px 5px 6px;font-variant-numeric:tabular-nums}
 .wallet svg{width:22px;height:22px}
@@ -286,7 +289,7 @@ tr.me td{background:rgba(255,194,61,.12)}
           <button class="tog" id="hMusic" aria-pressed="true"><i></i>Musique</button>
           <button class="tog" id="hSfx" aria-pressed="true"><i></i>Effets sonores</button>
         </div>
-        <div class="row"><button class="ghost" id="bShop">Boutique</button><button class="ghost" id="bBoard">Classement</button></div>
+        <div class="row"><button class="ghost" id="bAccount">Se connecter</button><button class="ghost" id="bShop">Boutique</button><button class="ghost" id="bBoard">Classement</button></div>
       </div>
     </div>
     <p class="rot">Tourne ton téléphone à l'horizontale pour mieux voir la piste.</p>
@@ -361,6 +364,34 @@ tr.me td{background:rgba(255,194,61,.12)}
       <button class="ghost" id="bToLobby">Changer de mode</button>
     </div>
     <button class="ghost" id="bResQuit">Quitter</button>
+  </div>
+</div>
+
+<div class="overlay" id="account" hidden>
+  <div class="card">
+    <h2 class="logo">Compte</h2>
+    <p class="sub" id="acSub"></p>
+    <div id="acOut" class="stack">
+      <div class="seg" id="acTabs"><button id="acTabLogin" aria-pressed="true">Connexion</button><button id="acTabReg" aria-pressed="false">Créer un compte</button></div>
+      <div><label class="lbl" for="acEmail">E-mail</label><input class="txt" id="acEmail" type="email" inputmode="email" autocomplete="email" maxlength="120" autocapitalize="none" spellcheck="false"></div>
+      <div id="acRecBox" hidden><label class="lbl" for="acRec">Code de secours</label><input class="txt" id="acRec" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX"></div>
+      <div><label class="lbl" for="acPass" id="acPassLbl">Mot de passe</label><input class="txt" id="acPass" type="password" autocomplete="current-password" maxlength="100"></div>
+      <button class="go" id="acGo">Se connecter</button>
+      <button class="ghost sm" id="acForgot">Mot de passe oublié ?</button>
+    </div>
+    <div id="acRecovery" class="stack" hidden>
+      <div class="recbox" id="acCode"></div>
+      <p class="help">C'est ton <b>code de secours</b>. Il permet de récupérer ton compte si tu oublies ton mot de passe, et il ne s'affiche <b>qu'une seule fois</b>. Note-le ou fais une capture d'écran.</p>
+      <div class="row"><button class="ghost" id="acCopy">Copier le code</button><button class="go" id="acNoted">J'ai noté mon code</button></div>
+    </div>
+    <div id="acMe" class="stack" hidden>
+      <div class="meline"><span class="lbl">Connecté en tant que</span><b id="acMail"></b></div>
+      <p class="help">Ton pseudo, ton personnage, ton kart, tes crédits, tes boosters et tes records sont sauvegardés en ligne. Connecte-toi avec le même e-mail sur un autre appareil pour les retrouver.</p>
+      <button class="ghost" id="acLogout">Se déconnecter</button>
+      <div class="delbox"><label class="lbl" for="acDelPass">Supprimer le compte</label><input class="txt" id="acDelPass" type="password" autocomplete="current-password" maxlength="100" placeholder="Mot de passe"><button class="ghost danger" id="acDel">Supprimer mon compte</button></div>
+    </div>
+    <p class="err" id="acErr" hidden></p>
+    <button class="ghost" id="acBack">Retour</button>
   </div>
 </div>
 
@@ -1127,7 +1158,7 @@ function recordStats(msg){
   if(i>=0){const r=msg.res[i];h.me.rounds++;h.me.pts+=r.pts;if(i===0)h.me.wins++;if(i<3)h.me.podiums++;
     h.modes[msg.mode]=(h.modes[msg.mode]||0)+1;
     if(msg.mode==='course'&&r.fin){const key=bestKey(msg.opts),old=h.best[key];out={key,time:r.time,old};if(!old||r.time<old)h.best[key]=r.time;}}
-  store.set('tb-hall',h);return out;
+  store.set('tb-hall',h);queueSync();return out;
 }
 
 /* ---------- Réseau (PeerJS, pair-à-pair) ---------- */
@@ -1483,8 +1514,8 @@ function pvUpdate(t){
 
 const nameIn=$('#nameIn');nameIn.value=store.get('tb-name','')||'';
 const myName=()=>cleanName(nameIn.value||PILOTS[myPilot].name);
-nameIn.addEventListener('change',()=>store.set('tb-name',cleanName(nameIn.value)));
-function hideScreens(){['#home','#lobby','#pause','#results','#board','#shop'].forEach(s=>$(s).hidden=true);}
+nameIn.addEventListener('change',()=>{store.set('tb-name',cleanName(nameIn.value));queueSync();});
+function hideScreens(){['#home','#lobby','#pause','#results','#board','#shop','#account'].forEach(s=>$(s).hidden=true);}
 function showHome(){hideScreens();$('#hud').hidden=true;$('#home').hidden=false;$('#homeErr').hidden=true;setHomeBusy(false);}
 function homeError(t){const e=$('#homeErr');e.textContent=t;e.className='err';e.hidden=false;}
 function homeInfo(t){const e=$('#homeErr');e.textContent=t;e.className='err info';e.hidden=false;}
@@ -1493,10 +1524,10 @@ function lobbyError(t){const e=$('#lobErr');e.textContent=t||'';e.hidden=!t;}
 const pilotsEl=$('#pilots'),kartsEl=$('#karts');
 PILOTS.forEach((p,i)=>{const b=document.createElement('button');b.className='pilot';b.id='pilot-'+i;b.setAttribute('aria-pressed',String(i===myPilot));
   b.innerHTML=`${PV.portraits[i]?`<img src="${PV.portraits[i]}" alt="">`:`<i style="background:${hex(p.color)}"></i>`}${esc(p.name)}<small>${p.kind} · ${p.weight}</small>`;
-  b.addEventListener('click',()=>{myPilot=i;store.set('tb-pilot',i);refreshPicker();});pilotsEl.appendChild(b);});
+  b.addEventListener('click',()=>{myPilot=i;store.set('tb-pilot',i);refreshPicker();queueSync();});pilotsEl.appendChild(b);});
 Object.entries(KARTS).forEach(([id,K])=>{const b=document.createElement('button');b.className='kart';b.id='kart-'+id;
   b.innerHTML=`${PV.thumbs[id]?`<img src="${PV.thumbs[id]}" alt="">`:''}${esc(K.name)}`;
-  b.addEventListener('click',()=>{myKart=id;store.set('tb-kart',id);refreshPicker();});kartsEl.appendChild(b);});
+  b.addEventListener('click',()=>{myKart=id;store.set('tb-kart',id);refreshPicker();queueSync();});kartsEl.appendChild(b);});
 function refreshPicker(){
   pilotsEl.querySelectorAll('.pilot').forEach((x,j)=>x.setAttribute('aria-pressed',String(j===myPilot)));
   kartsEl.querySelectorAll('.kart').forEach(x=>x.setAttribute('aria-pressed',String(x.id==='kart-'+myKart)));
@@ -1657,7 +1688,7 @@ const BOOSTERS={
 const MAX_EQUIP=2;
 function loadWallet(){const w=store.get('tb-wallet',null)||{credits:100,inv:{},eq:[],earned:0};w.inv=w.inv||{};w.eq=(w.eq||[]).filter(id=>BOOSTERS[id]&&(w.inv[id]|0)>0);return w;}
 let wallet=loadWallet();
-function saveWallet(){store.set('tb-wallet',wallet);syncWalletUi();}
+function saveWallet(skip){store.set('tb-wallet',wallet);syncWalletUi();if(!skip)queueSync();}
 function syncWalletUi(){$('#homeCredits').textContent=wallet.credits;$('#shopCredits').textContent=wallet.credits;}
 function buyBooster(id){
   const B=BOOSTERS[id];if(!B||wallet.credits<B.price)return;
@@ -1711,6 +1742,98 @@ function awardCredits(msg){
   return {gain,place:i+1,dbl,mult};
 }
 syncWalletUi();
+
+/* ---------- Compte en ligne (e-mail + mot de passe, sauvegarde sur le serveur) ---------- */
+const API=window.TB_API!=null?window.TB_API:(location.hostname.endsWith('.netlify.app')?'':'https://turbo-bolides.netlify.app');
+let auth=store.get('tb-auth',null);if(!auth||!auth.token)auth=null;
+let acView='login',acBusy=false,syncT=null,recShown='';
+async function apiCall(path,body){
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),15000);
+  try{
+    const r=await fetch(API+'/api/'+path,{method:'POST',headers:Object.assign({'content-type':'application/json'},auth?{authorization:'Bearer '+auth.token}:{}),body:JSON.stringify(body||{}),signal:ctl.signal});
+    let d={};try{d=await r.json();}catch(e){}
+    return {ok:r.ok,status:r.status,data:d};
+  }catch(e){return {ok:false,status:0,data:{error:'Impossible de joindre le serveur. Vérifie ta connexion internet (ou ouvre le jeu depuis l\'app ou le site).'}};}
+  finally{clearTimeout(to);}
+}
+function collectSave(){return {name:nameIn.value?cleanName(nameIn.value):'',pilot:myPilot,kart:myKart,credits:wallet.credits,earned:wallet.earned|0,inv:wallet.inv,eq:wallet.eq,hall:loadHall()};}
+function applySave(s){
+  if(!s)return;
+  store.set('tb-wallet',{credits:s.credits|0,inv:s.inv||{},eq:s.eq||[],earned:s.earned|0});wallet=loadWallet();
+  if(s.hall)store.set('tb-hall',s.hall);
+  if(PILOTS[s.pilot]){myPilot=s.pilot;store.set('tb-pilot',myPilot);}
+  if(KARTS[s.kart]){myKart=s.kart;store.set('tb-kart',myKart);}
+  if(s.name){nameIn.value=s.name;store.set('tb-name',s.name);}
+  refreshPicker();renderBoosts();syncWalletUi();
+}
+function setAuth(a){auth=a;store.set('tb-auth',a);updateAccountBtn();}
+function updateAccountBtn(){$('#bAccount').textContent=auth?'Mon compte':'Se connecter';}
+function queueSync(){if(!auth)return;clearTimeout(syncT);syncT=setTimeout(syncUp,1500);}
+async function syncUp(){
+  if(!auth)return;const r=await apiCall('save',{save:collectSave()});
+  if(r.status===401){setAuth(null);toast('Session expirée : reconnecte-toi pour continuer la sauvegarde en ligne.');return;}
+  if(r.ok&&r.data.save&&r.data.save.credits!==wallet.credits){wallet.credits=r.data.save.credits;saveWallet(true);}
+}
+async function pullAccount(){
+  if(!auth)return;const r=await apiCall('load',{});
+  if(r.status===401){setAuth(null);toast('Session expirée : reconnecte-toi pour retrouver ta sauvegarde.');return;}
+  if(r.ok&&r.data.save){applySave(r.data.save);}
+}
+function acError(t){const e=$('#acErr');e.textContent=t||'';e.hidden=!t;}
+function renderAccount(){
+  const view=auth&&acView!=='recovery'?'me':acView==='recovery'?'recovery':acView;
+  $('#acOut').hidden=!(view==='login'||view==='register'||view==='reset');
+  $('#acRecovery').hidden=view!=='recovery';$('#acMe').hidden=view!=='me';
+  $('#acTabs').hidden=view==='reset';
+  $('#acTabLogin').setAttribute('aria-pressed',String(view==='login'));$('#acTabReg').setAttribute('aria-pressed',String(view==='register'));
+  $('#acRecBox').hidden=view!=='reset';
+  $('#acPassLbl').textContent=view==='reset'?'Nouveau mot de passe':'Mot de passe (8 caractères minimum)';
+  $('#acPass').autocomplete=view==='login'?'current-password':'new-password';
+  $('#acGo').textContent=view==='login'?'Se connecter':view==='register'?'Créer mon compte':'Changer le mot de passe';
+  $('#acForgot').hidden=view!=='login';$('#acForgot').textContent='Mot de passe oublié ?';
+  $('#acSub').textContent=view==='login'?'Connecte-toi pour retrouver tes crédits, boosters et records sur tous tes appareils.':view==='register'?'Tes crédits, boosters, records, personnage et kart actuels seront envoyés sur ton compte.':view==='reset'?'Entre ton e-mail, le code de secours reçu à l\'inscription et un nouveau mot de passe.':view==='recovery'?'Compte prêt. Dernière chose importante :':'Ta progression est sauvegardée en ligne.';
+  if(view==='recovery')$('#acCode').textContent=recShown;
+  if(view==='me'){$('#acMail').textContent=auth.email;$('#acDelPass').value='';$('#acDel').textContent='Supprimer mon compte';acDelArm=false;}
+}
+let acDelArm=false;
+function openAccount(){hideScreens();$('#account').hidden=false;acError('');if(!auth&&acView==='me')acView='login';if(auth&&acView!=='recovery')acView='me';renderAccount();}
+function setAcView(v){acView=v;acError('');renderAccount();}
+async function acSubmit(){
+  if(acBusy)return;const email=$('#acEmail').value.trim(),pass=$('#acPass').value;
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return acError('Entre une adresse e-mail valide.');
+  if(pass.length<8)return acError('Le mot de passe doit faire au moins 8 caractères.');
+  acBusy=true;$('#acGo').disabled=true;acError('');
+  let r;
+  if(acView==='login')r=await apiCall('login',{email,password:pass});
+  else if(acView==='register')r=await apiCall('register',{email,password:pass,save:collectSave()});
+  else r=await apiCall('reset',{email,recovery:$('#acRec').value,password:pass});
+  acBusy=false;$('#acGo').disabled=false;
+  if(!r.ok)return acError(r.data.error||'Erreur. Réessaie.');
+  const wasReg=acView==='register';
+  setAuth({token:r.data.token,email:email.toLowerCase()});
+  $('#acPass').value='';$('#acRec').value='';
+  if(!wasReg)applySave(r.data.save);
+  if(r.data.recovery){recShown=r.data.recovery;acView='recovery';}else{acView='me';toast('Connecté');}
+  renderAccount();
+}
+$('#bAccount').addEventListener('click',openAccount);
+$('#acBack').addEventListener('click',()=>{if(acView==='recovery')return acError('Note d\'abord ton code de secours, puis appuie sur « J\'ai noté mon code ».');hideScreens();$('#home').hidden=false;});
+$('#acTabLogin').addEventListener('click',()=>setAcView('login'));$('#acTabReg').addEventListener('click',()=>setAcView('register'));
+$('#acForgot').addEventListener('click',()=>setAcView('reset'));
+$('#acGo').addEventListener('click',acSubmit);
+['acEmail','acPass','acRec'].forEach(id=>$('#'+id).addEventListener('keydown',e=>{if(e.key==='Enter')acSubmit();}));
+$('#acCopy').addEventListener('click',()=>{try{navigator.clipboard.writeText(recShown).then(()=>toast('Code copié'),()=>toast('Note-le à la main'));}catch(e){toast('Note-le à la main');}});
+$('#acNoted').addEventListener('click',()=>{recShown='';acView='me';renderAccount();toast('Compte prêt');});
+$('#acLogout').addEventListener('click',()=>{setAuth(null);acView='login';renderAccount();toast('Déconnecté. Ta progression reste sur cet appareil.');});
+$('#acDel').addEventListener('click',async()=>{
+  if(!acDelArm){acDelArm=true;$('#acDel').textContent='Confirmer la suppression';return;}
+  const pass=$('#acDelPass').value;if(!pass)return acError('Entre ton mot de passe pour confirmer.');
+  const r=await apiCall('delete',{password:pass});
+  if(!r.ok){acDelArm=false;$('#acDel').textContent='Supprimer mon compte';return acError(r.data.error||'Erreur. Réessaie.');}
+  setAuth(null);acView='login';renderAccount();toast('Compte supprimé. Ta progression reste sur cet appareil.');
+});
+updateAccountBtn();
+if(auth)pullAccount();
 
 /* ---------- Boucle ---------- */
 function playerFinished(){const r=R.me.rank+1;showMsg(r===1?'Victoire !':'Arrivée · '+ordTxt(r),2.6);sfx(r===1?880:520,.5,'triangle',.15);vibrate(200);setBanner('Arrivée ! Pilote automatique activé.');}
