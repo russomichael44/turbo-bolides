@@ -308,7 +308,7 @@ tr.me td{background:rgba(255,194,61,.12)}
       </div>
     </div>
     <p class="rot">Tourne ton téléphone à l'horizontale pour mieux voir la piste.</p>
-    <p class="help">L'accélération est automatique. Pour déraper, maintiens <b>Dérapage</b> (ou <b>Espace</b>) en tournant, puis relâche pour le mini-turbo (étincelles bleues, puis orange). Les cristaux donnent un objet : Turbo, Triple turbo, Étoile filante (invincible), Éclair, Peaux de banane, Fumigène, Carapace verte (tout droit, rebondit), Carapace rouge (téléguidée) ou Bouclier.</p>
+    <p class="help">L'accélération est automatique. <b>Départ turbo</b> : pendant le compte à rebours, tapote Dérapage (ou Espace) au moins 3 fois, 6 fois pour un super départ. Pour déraper, maintiens <b>Dérapage</b> (ou <b>Espace</b>) en tournant, puis relâche pour le mini-turbo (étincelles bleues, puis orange). Les cristaux donnent un objet : Turbo, Triple turbo, Étoile filante (invincible), Éclair, Peaux de banane, Fumigène, Carapace verte (tout droit, rebondit), Carapace rouge (téléguidée) ou Bouclier.</p>
   </div>
 </div>
 
@@ -882,7 +882,7 @@ function startRound(msg){
       baseV:(g.bot?g.bv:PLAYER_V)+st.v,maxV:0,lane:lat,laneTarget:lat,laneT:1+Math.random()*2,yaw:0,spinA:0,wheelA:0,net:null,v:null};
     k.maxV=k.baseV;k.v=makeKart(k);R.karts.push(k);if(isP)R.me=k;
   });
-  Object.assign(R,{active:true,state:'countdown',countdown:3.6,lastCount:-1,time:0,firstFin:null,lastHumanFin:null,ended:false,elim:[],sendT:0});
+  Object.assign(R,{active:true,state:'countdown',countdown:3.6,lastCount:-1,time:0,startTaps:0,firstFin:null,lastHumanFin:null,ended:false,elim:[],sendT:0});
   R.bomb={holder:-1,tl:0,next:3,cool:0};
   hideScreens();$('#hud').hidden=false;setBanner(null);$('#ink').hidden=true;
   setItemSlot(null);hudCache={};
@@ -1458,6 +1458,7 @@ window.addEventListener('keydown',e=>{
   if(e.target&&e.target.tagName==='INPUT')return;
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault();
   keys[e.key.toLowerCase()]=true;
+  if((e.key===' '||e.key==='Shift')&&!e.repeat)startTap();
   if(e.key.length===1&&'xXeE'.includes(e.key)&&R.state==='race'&&!paused&&R.me&&R.me.roll<=0)useItem(R.me);
   if((e.key==='p'||e.key==='P'||e.key==='Escape')&&R.active&&R.state!=='over')setPause($('#pause').hidden);
 });
@@ -1475,7 +1476,7 @@ function holdBtn(el,on,off){
   el.addEventListener('pointerdown',e=>{e.preventDefault();initAudio();try{el.setPointerCapture(e.pointerId);}catch(_){}el.classList.add('on');on();});
   ['pointerup','pointercancel','lostpointercapture'].forEach(t=>el.addEventListener(t,()=>{el.classList.remove('on');off&&off();}));
 }
-holdBtn($('#bDrift'),()=>touch.drift=true,()=>touch.drift=false);
+holdBtn($('#bDrift'),()=>{touch.drift=true;startTap();},()=>touch.drift=false);
 holdBtn($('#bBrake'),()=>touch.brake=true,()=>touch.brake=false);
 holdBtn($('#bItem'),()=>{if(R.state==='race'&&!paused&&R.me&&R.me.roll<=0)useItem(R.me);});
 document.addEventListener('contextmenu',e=>e.preventDefault());
@@ -1485,6 +1486,14 @@ function playerInput(k,dt){
   const steer=clamp(touch.steer+(kl?-1:0)+(kr?1:0),-1,1);
   const brake=touch.brake||keys['arrowdown']||keys['s'];
   return {steer,gas:!brake,brake,drift:!!(touch.drift||keys[' ']||keys['shift'])};
+}
+// Départ turbo : tapoter Dérapage pendant le compte à rebours
+function startTap(){if(R.state!=='countdown'||!R.me)return;R.startTaps=(R.startTaps|0)+1;sfx(300+Math.min(R.startTaps,8)*70,.05,'square',.05);if(R.startTaps===3||R.startTaps===6)vibrate(30);}
+function startTurbo(){
+  const me=R.me,n=R.startTaps|0;R.startTaps=0;
+  if(me&&n>=6){me.boost=Math.max(me.boost,1.4);me.speed=Math.max(me.speed,22);showMsg('Super départ !',1.2,true);sfx(760,.3,'sawtooth',.12);vibrate(80);}
+  else if(me&&n>=3){me.boost=Math.max(me.boost,.9);me.speed=Math.max(me.speed,16);showMsg('Départ turbo !',1.1,true);sfx(620,.25,'sawtooth',.12);}
+  for(const k of R.karts)if(k.bot&&k.local&&Math.random()<.35)k.boost=Math.max(k.boost,.7);
 }
 function vibrate(ms){try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}}
 let wake=null;
@@ -2093,7 +2102,7 @@ function step(dt,t){
   if(R.state==='countdown'){
     R.countdown-=dt;const c=Math.ceil(R.countdown-.6);
     if(c!==R.lastCount&&c>=1&&c<=3){R.lastCount=c;showMsg(String(c),.9);sfx(440,.18,'square',.12);}
-    if(R.countdown<=.6){R.state='race';showMsg('Partez !',1);sfx(880,.35,'square',.14);applyBoostersAtGo();
+    if(R.countdown<=.6){R.state='race';showMsg('Partez !',1);sfx(880,.35,'square',.14);applyBoostersAtGo();startTurbo();
       if(R.mode==='patate')setTimeout(()=>{if(R.state==='race')showMsg('Gare à la bombe !',1.2,true);},1100);}
     for(const k of R.karts)k.local?updateKart(k,0,{steer:0,gas:false,brake:false,drift:false}):updateRemote(k,0);
   }else{
@@ -2130,6 +2139,17 @@ function frame(now){
   renderer.render(scene,camera);
 }
 requestAnimationFrame(frame);
+if(location.hostname.endsWith('.netlify.app')){
+  // Le badge ajouté par Netlify en bas à droite cachait les boutons : on le remonte au milieu du bord droit
+  const moveBadge=()=>{
+    const cands=new Set();
+    for(const el of document.body.children){const sig=((el.id||'')+' '+(typeof el.className==='string'?el.className:'')+' '+(el.getAttribute&&el.getAttribute('href')||'')+' '+(el.tagName==='SCRIPT'?'':(el.textContent||'').slice(0,120))).toLowerCase();if(sig.includes('netlify'))cands.add(el);}
+    document.querySelectorAll('a[href*="netlify"],iframe[src*="netlify"]').forEach(a=>{let e=a;while(e&&e!==document.body){if(getComputedStyle(e).position==='fixed'){cands.add(e);break;}e=e.parentElement;}});
+    for(const el of cands){if(el.dataset.tbMoved||el.tagName==='SCRIPT')continue;const cs=getComputedStyle(el);if(cs.position!=='fixed'&&cs.position!=='absolute')continue;
+      el.style.setProperty('top','50%','important');el.style.setProperty('bottom','auto','important');el.style.setProperty('transform','translateY(-50%) scale(.85)','important');el.style.setProperty('transform-origin','right center','important');el.dataset.tbMoved='1';}
+  };
+  new MutationObserver(moveBadge).observe(document.body,{childList:true,subtree:true});moveBadge();setTimeout(moveBadge,1500);setTimeout(moveBadge,5000);
+}
 window.__tb={R,Net,Lobby,emit,hazards,missiles,ITEM_KEYS,get boxCount(){return trackBoxes.filter(b=>b.mesh.visible).length;}};
 })();
 </script>
