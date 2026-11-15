@@ -180,6 +180,33 @@ td.nm{white-space:normal;overflow-wrap:anywhere}
 td.pts{color:var(--ok);font-weight:800;text-align:right}
 td.mut{color:var(--muted)}
 tr.me td{background:rgba(255,194,61,.12)}
+.homehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.wallet{display:flex;align-items:center;gap:6px;background:rgba(255,194,61,.12);border:1px solid rgba(255,194,61,.45);border-radius:999px;padding:5px 12px 5px 6px;font-variant-numeric:tabular-nums}
+.wallet svg{width:22px;height:22px}
+.wallet b{font-family:var(--display);font-weight:400;font-size:18px;color:var(--sun)}
+.wallet span{font-size:12px;color:var(--muted)}
+.wallet.big svg{width:28px;height:28px}.wallet.big b{font-size:24px}
+.shopgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.bcard{display:grid;grid-template-columns:52px 1fr;grid-template-rows:1fr auto;gap:8px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:12px}
+.bic{grid-row:1/3;width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.06);display:grid;place-items:center}
+.bic svg{width:40px;height:40px}
+.bt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bt b{font-family:var(--display);font-weight:400;font-size:15px}
+.bt span{color:var(--muted);font-size:13px;line-height:1.35}
+.bt small{color:var(--sky);font-size:12px;font-weight:600}
+.buy{justify-self:start;display:flex;align-items:center;gap:6px;border:0;border-radius:12px;background:var(--sun);color:var(--ink);font-weight:800;font-size:15px;padding:7px 14px 7px 8px;box-shadow:0 3px 0 #c4861a;font-variant-numeric:tabular-nums}
+.buy svg{width:20px;height:20px}
+.buy:disabled{background:rgba(255,255,255,.12);color:var(--muted);box-shadow:none}
+.bcard .miss{grid-column:2;font-style:normal;font-size:12px;color:#ffb4a3;margin-top:-4px}
+.boostbox{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.boostbox .lbl{margin:0}
+.boosts{display:flex;flex-wrap:wrap;gap:6px;width:100%}
+.bchip{display:flex;align-items:center;gap:6px;border:2px solid var(--line);background:var(--panel2);border-radius:12px;padding:5px 10px 5px 6px;font-weight:600;font-size:13px}
+.bchip svg{width:24px;height:24px}
+.bchip em{font-style:normal;color:var(--muted);font-size:12px}
+.bchip[aria-pressed="true"]{border-color:var(--ok);background:rgba(61,220,151,.14)}
+.credline{margin:0;display:flex;align-items:center;gap:8px;font-weight:700;color:var(--sun)}
+.credline svg{width:22px;height:22px}
 .empty-note{color:var(--muted);font-size:14px;margin:0;padding:10px 0}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
 .stat{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px}
@@ -233,7 +260,7 @@ tr.me td{background:rgba(255,194,61,.12)}
 <div class="overlay" id="home">
   <div class="card wide">
     <div>
-      <h1 class="logo">Turbo Bolides</h1>
+      <div class="homehead"><h1 class="logo">Turbo Bolides</h1><div class="wallet"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#ffc23d" stroke="#c4861a" stroke-width="2"/><path d="M12 6.5v11M9 9.5c0-1.2 1.3-2 3-2s3 .8 3 2-1.3 1.7-3 2-3 .8-3 2 1.3 2 3 2 3-.8 3-2" fill="none" stroke="#7a4a00" stroke-width="1.8" stroke-linecap="round"/></svg><b id="homeCredits">0</b><span>crédits</span></div></div>
       <p class="sub">Karts, objets et coups bas entre amis. Jusqu'à 6 joueurs en ligne avec un code d'invitation.</p>
     </div>
     <div class="homegrid">
@@ -259,7 +286,7 @@ tr.me td{background:rgba(255,194,61,.12)}
           <button class="tog" id="hMusic" aria-pressed="true"><i></i>Musique</button>
           <button class="tog" id="hSfx" aria-pressed="true"><i></i>Effets sonores</button>
         </div>
-        <button class="ghost" id="bBoard">Classement</button>
+        <div class="row"><button class="ghost" id="bShop">Boutique</button><button class="ghost" id="bBoard">Classement</button></div>
       </div>
     </div>
     <p class="rot">Tourne ton téléphone à l'horizontale pour mieux voir la piste.</p>
@@ -283,6 +310,8 @@ tr.me td{background:rgba(255,194,61,.12)}
       <section class="stack">
         <div><p class="lbl" id="lobCount">Joueurs</p><ul class="players" id="lobPlayers"></ul></div>
         <div><p class="lbl">Classement de la soirée</p><div class="tw" id="lobStand"></div></div>
+        <div class="boostbox"><p class="lbl">Tes boosters pour la manche <span id="boostCount"></span></p><div class="boosts" id="boosts"></div>
+          <button class="ghost sm" id="bLobbyShop">Ouvrir la boutique</button></div>
       </section>
       <section class="stack">
         <div><p class="lbl">Mode de jeu</p><div class="modes" id="modes"></div></div>
@@ -324,6 +353,7 @@ tr.me td{background:rgba(255,194,61,.12)}
       <section><p class="lbl">Cette manche</p><div class="tw"><table><tbody id="rBody"></tbody></table></div></section>
       <section><p class="lbl">Classement de la soirée</p><div class="tw" id="rStand"></div></section>
     </div>
+    <p class="credline" id="rCredits" hidden></p>
     <p class="sub" id="rRec"></p>
     <p class="wait" id="rWait" hidden>En attente de l'hôte pour la manche suivante…</p>
     <div class="row" id="rHost">
@@ -331,6 +361,15 @@ tr.me td{background:rgba(255,194,61,.12)}
       <button class="ghost" id="bToLobby">Changer de mode</button>
     </div>
     <button class="ghost" id="bResQuit">Quitter</button>
+  </div>
+</div>
+
+<div class="overlay" id="shop" hidden>
+  <div class="card wide">
+    <div class="homehead"><h2 class="logo">Boutique</h2><div class="wallet big"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#ffc23d" stroke="#c4861a" stroke-width="2"/><path d="M12 6.5v11M9 9.5c0-1.2 1.3-2 3-2s3 .8 3 2-1.3 1.7-3 2-3 .8-3 2 1.3 2 3 2 3-.8 3-2" fill="none" stroke="#7a4a00" stroke-width="1.8" stroke-linecap="round"/></svg><b id="shopCredits">0</b><span>crédits</span></div></div>
+    <p class="sub">Chaque manche rapporte des crédits selon ta place : 100 pour le 1er, puis 75, 55, 40, 30 et 20. En solo, le niveau des bots compte (Facile ×0,7, Expert ×1,4) ; en ligne, ×1,2. Les boosters s'équipent dans le salon, 2 au maximum par manche, et sont consommés au départ.</p>
+    <div class="shopgrid" id="shopGrid"></div>
+    <button class="go" id="bShopBack">Retour</button>
   </div>
 </div>
 
@@ -701,7 +740,8 @@ const ICON={
 };
 const ITEM_NAMES={turbo:'Turbo',huile:'Flaque d\'huile',missile:'Missile',bouclier:'Bouclier',etoile:'Étoile filante',triple:'Triple turbo',encre:'Fumigène'};
 const ITEM_KEYS=['turbo','huile','missile','bouclier','etoile','triple','encre'];
-function rollItem(rank){
+function rollItem(rank,lucky){
+  if(lucky){const w=[2,1,3,1,3,3,1];let r=Math.random()*14;for(let i=0;i<7;i++){r-=w[i];if(r<0)return ITEM_KEYS[i];}}
   // en tête : objets défensifs ; en queue : de quoi remonter (étoile, triple turbo)
   const w=(R.mode==='bataille'||R.mode==='ballons')?[2,3,4,2,1,1,2]:rank<=1?[2,5,1,3,0,0,1]:rank<=3?[3,3,3,2,1,2,2]:[3,1,4,1,3,3,2];
   let r=Math.random()*w.reduce((a,b)=>a+b);for(let i=0;i<w.length;i++){r-=w[i];if(r<0)return ITEM_KEYS[i];}return 'turbo';
@@ -776,6 +816,7 @@ function startRound(msg){
   $('#hMe').innerHTML=R.me?avatar(R.me.pilot,'sm')+esc(R.me.name):'';$('#hMe').hidden=!R.me;
   const t=camTarget();if(t)camPos.set(t.x-Math.sin(t.h)*9,5,t.z-Math.cos(t.h)*9);
   requestWake();
+  applyBoostersAtStart();
 }
 
 /* ---------- Physique ---------- */
@@ -882,7 +923,7 @@ function updateKart(k,dt,inp){
   k.steer+=(inp.steer-k.steer)*Math.min(1,dt*(k.isPlayer?12:8));
   const sf=clamp(Math.abs(k.speed)/10,0,1)*(k.speed<0?-1:1);
   let turn;
-  if(k.drift){const s=k.steer*k.drift;turn=k.drift*(.6+.45*s)*2.25*k.hand;k.charge+=dt*(.7+.6*Math.max(0,s));}
+  if(k.drift){const s=k.steer*k.drift;turn=k.drift*(.6+.45*s)*2.25*k.hand;k.charge+=dt*(.7+.6*Math.max(0,s))*(k.driftMul||1);}
   else turn=k.steer*1.9*sf*k.hand;
   k.h-=turn*dt;
   const fx_=Math.sin(k.h),fz=Math.cos(k.h);
@@ -903,7 +944,7 @@ function updateKart(k,dt,inp){
   }
   if(dt>0)for(let bi=0;bi<boxes.length;bi++){const b=boxes[bi];if(b.cool>0)continue;const dx=k.x-b.x,dz=k.z-b.z;if(dx*dx+dz*dz<6.5){emit({e:'box',b:bi});giveItem(k);}}
   if(k.roll>0){k.roll-=dt;if(k.isPlayer){k.rollTick-=dt;if(k.rollTick<=0&&k.roll>.12){k.rollTick=.065+(1-k.roll)*.06;Jingle.tick(k.rollN++);}}
-    if(k.roll<=0){setItem(k,rollItem(k.rank));setItemSlot(k.item);if(k.isPlayer){Jingle.land();toast(ITEM_NAMES[k.item]);}}}
+    if(k.roll<=0){setItem(k,rollItem(k.rank,k.isPlayer&&(R.boosters||[]).includes('chance')));setItemSlot(k.item);if(k.isPlayer){Jingle.land();toast(ITEM_NAMES[k.item]);}}}
   if(R.mode==='course'&&!k.finished&&k.prog>=R.laps*N)emit({e:'fin',s:k.slot,time:r2(R.time)});
   if(R.mode==='patate'&&R.bomb.holder===k.slot&&k.passT<=0&&dt>0){
     for(const o of R.karts){if(o===k||o.out||o.gone)continue;const dx=o.x-k.x,dz=o.z-k.z;if(dx*dx+dz*dz<7.3){requestPass(k.slot,o.slot);k.passT=.4;break;}}
@@ -1070,7 +1111,7 @@ function endRound(){
 }
 function onEnd(msg){
   R.state='over';R.ended=true;Lobby.stand=msg.stand;Lobby.racing=false;
-  const rec=recordStats(msg);
+  const rec=recordStats(msg);rec.cr=awardCredits(msg);
   const me=msg.res.findIndex(r=>r.pid===Net.myPid);
   if(R.mode!=='course'||!R.me||!R.me.finished)showMsg(me===0?'Victoire !':'Fin de la manche',1.6);
   setTimeout(()=>{if(R.state==='over')showResults(msg,rec);},1700);
@@ -1443,7 +1484,7 @@ function pvUpdate(t){
 const nameIn=$('#nameIn');nameIn.value=store.get('tb-name','')||'';
 const myName=()=>cleanName(nameIn.value||PILOTS[myPilot].name);
 nameIn.addEventListener('change',()=>store.set('tb-name',cleanName(nameIn.value)));
-function hideScreens(){['#home','#lobby','#pause','#results','#board'].forEach(s=>$(s).hidden=true);}
+function hideScreens(){['#home','#lobby','#pause','#results','#board','#shop'].forEach(s=>$(s).hidden=true);}
 function showHome(){hideScreens();$('#hud').hidden=true;$('#home').hidden=false;$('#homeErr').hidden=true;setHomeBusy(false);}
 function homeError(t){const e=$('#homeErr');e.textContent=t;e.className='err';e.hidden=false;}
 function homeInfo(t){const e=$('#homeErr');e.textContent=t;e.className='err info';e.hidden=false;}
@@ -1495,6 +1536,7 @@ function renderLobby(){
   for(let i=Lobby.players.length+bp.length;i<6;i++)html+=`<li class="empty">${host&&i===Lobby.players.length+bp.length?`<button class="add" id="addBot" data-add="1">${PLUS}Ajouter un bot</button>`:'Place libre'}</li>`;
   $('#lobPlayers').innerHTML=html;
   $('#lobStand').innerHTML=standTable(Lobby.stand,Net.myPid);
+  renderBoosts();
   modesEl.querySelectorAll('.mode').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.m===o.mode));b.disabled=!host;});
   $('#lapsBox').hidden=o.mode!=='course';
   $('#trackBox').hidden=o.mode==='ballons';
@@ -1556,6 +1598,8 @@ function showResults(msg,rec){
   $('#rStand').innerHTML=standTable(msg.stand,Net.myPid);
   let t='';if(rec&&rec.key){t=(!rec.old||rec.time<rec.old)?'Nouveau record ('+rec.key+') : '+fmt(rec.time):'Ton temps : '+fmt(rec.time)+' · record ('+rec.key+') : '+fmt(rec.old);}
   $('#rRec').textContent=t;$('#rRec').hidden=!t;
+  const cr=rec&&rec.cr,ce=$('#rCredits');
+  if(cr){ce.innerHTML=COIN+'+'+cr.gain+' crédits'+(cr.dbl?' (Prime ×2)':'')+'<span class="sub" style="margin:0;font-weight:400"> · total '+wallet.credits+'</span>';ce.hidden=false;}else ce.hidden=true;
   $('#rHost').hidden=!Net.isHost;$('#rWait').hidden=Net.isHost;
   $('#bResQuit').textContent=Net.online?(Net.isHost?'Fermer la partie':'Quitter la partie'):'Retour à l\'accueil';
   $('#results').hidden=false;
@@ -1591,6 +1635,83 @@ $('#bBoardReset').addEventListener('click',()=>{
 });
 if(/^#[A-Za-z0-9]{5}$/.test(location.hash))$('#codeIn').value=location.hash.slice(1).toUpperCase();
 
+/* ---------- Boutique : crédits et boosters (enregistrés sur l'appareil) ---------- */
+const COIN='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#ffc23d" stroke="#c4861a" stroke-width="2"/><path d="M12 6.5v11M9 9.5c0-1.2 1.3-2 3-2s3 .8 3 2-1.3 1.7-3 2-3 .8-3 2 1.3 2 3 2 3-.8 3-2" fill="none" stroke="#7a4a00" stroke-width="1.8" stroke-linecap="round"/></svg>';
+const CREDITS=[100,75,55,40,30,20];
+const BOOSTERS={
+  depart:{name:'Départ canon',price:80,desc:'Gros turbo au signal « Partez ! ».',
+    icon:'<svg viewBox="0 0 48 48"><path d="M10 8v32" stroke="#f6f8fb" stroke-width="3" stroke-linecap="round"/><path d="M10 9h14v10H10z" fill="#f6f8fb"/><path d="M10 9h7v5h-7zM17 14h7v5h-7z" fill="#1d2330"/><path d="M24 26l8 8-8 8M33 26l8 8-8 8" stroke="#ffc23d" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
+  bouclier:{name:'Bouclier de départ',price:70,desc:'Protégé de tout pendant les 15 premières secondes.',
+    icon:'<svg viewBox="0 0 48 48"><path d="M24 5l15 6v11c0 10-7 17-15 21C16 39 9 32 9 22V11z" fill="rgba(76,201,240,.3)" stroke="#4cc9f0" stroke-width="3"/><text x="24" y="30" text-anchor="middle" font-size="14" font-weight="800" fill="#4cc9f0" font-family="Arial">15</text></svg>'},
+  objet:{name:'Poche pleine',price:90,desc:'Tu pars avec un objet puissant : étoile, triple turbo ou missile.',
+    icon:'<svg viewBox="0 0 48 48"><path d="M24 4l14 20-14 20-14-20z" fill="rgba(125,249,255,.35)" stroke="#7df9ff" stroke-width="3" stroke-linejoin="round"/><path d="M24 15l6 9-6 9-6-9z" fill="#ffc23d"/></svg>'},
+  moteur:{name:'Moteur gonflé',price:150,desc:'+4 % de vitesse maximale pendant toute la manche.',
+    icon:'<svg viewBox="0 0 48 48"><path d="M8 34a17 17 0 1132 0" fill="none" stroke="#f6f8fb" stroke-width="4" stroke-linecap="round"/><path d="M8 34a17 17 0 0110-15" fill="none" stroke="#3ddc97" stroke-width="4" stroke-linecap="round"/><path d="M24 34l10-12" stroke="#ff5a36" stroke-width="4" stroke-linecap="round"/><circle cx="24" cy="34" r="4" fill="#ff5a36"/></svg>'},
+  chance:{name:'Trèfle',price:120,desc:'La roulette donne plus souvent étoile, triple turbo et missile.',
+    icon:'<svg viewBox="0 0 48 48"><g fill="#3ddc97"><circle cx="18" cy="16" r="8"/><circle cx="30" cy="16" r="8"/><circle cx="18" cy="28" r="8"/><circle cx="30" cy="28" r="8"/></g><path d="M24 24c0 8 2 14 6 18" stroke="#2a9d4a" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>'},
+  drift:{name:'Pneus slick',price:100,desc:'Les mini-turbos de dérapage se chargent 35 % plus vite.',
+    icon:'<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17" fill="#1d2330" stroke="#a9bccf" stroke-width="3"/><circle cx="24" cy="24" r="7" fill="#a9bccf"/><path d="M5 40c6-2 10-2 16 0M27 42c5-2 9-2 14 0" stroke="#ff8c1a" stroke-width="3" fill="none" stroke-linecap="round"/></svg>'},
+  double:{name:'Prime ×2',price:120,desc:'Crédits doublés à la fin de la manche.',
+    icon:'<svg viewBox="0 0 48 48"><circle cx="20" cy="24" r="15" fill="#ffc23d" stroke="#c4861a" stroke-width="3"/><text x="20" y="30" text-anchor="middle" font-size="15" font-weight="800" fill="#7a4a00" font-family="Arial">$</text><path d="M33 14l10 10M43 14L33 24" stroke="#ff5a36" stroke-width="4" stroke-linecap="round"/><text x="38" y="42" text-anchor="middle" font-size="14" font-weight="800" fill="#ff5a36" font-family="Arial">2</text></svg>'},
+};
+const MAX_EQUIP=2;
+function loadWallet(){const w=store.get('tb-wallet',null)||{credits:100,inv:{},eq:[],earned:0};w.inv=w.inv||{};w.eq=(w.eq||[]).filter(id=>BOOSTERS[id]&&(w.inv[id]|0)>0);return w;}
+let wallet=loadWallet();
+function saveWallet(){store.set('tb-wallet',wallet);syncWalletUi();}
+function syncWalletUi(){$('#homeCredits').textContent=wallet.credits;$('#shopCredits').textContent=wallet.credits;}
+function buyBooster(id){
+  const B=BOOSTERS[id];if(!B||wallet.credits<B.price)return;
+  wallet.credits-=B.price;wallet.inv[id]=(wallet.inv[id]|0)+1;saveWallet();
+  if(AC&&!muted){const t=AC.currentTime;tone(1319,t,.1,'square',.06);tone(1976,t+.07,.18,'triangle',.06);}
+  toast(B.name+' acheté');renderShop();
+}
+function renderShop(){
+  $('#shopGrid').innerHTML=Object.entries(BOOSTERS).map(([id,B])=>{const n=wallet.inv[id]|0,poor=wallet.credits<B.price;
+    return `<article class="bcard"><div class="bic">${B.icon}</div><div class="bt"><b>${B.name}</b><span>${B.desc}</span><small>${n?'Tu en as '+n:'Aucun en stock'}</small></div>
+    <button class="buy" id="buy-${id}" data-b="${id}"${poor?' disabled':''}>${COIN}${B.price}</button>${poor?`<em class="miss">Il te manque ${B.price-wallet.credits}</em>`:''}</article>`;}).join('');
+  syncWalletUi();
+}
+$('#shopGrid').addEventListener('click',e=>{const b=e.target.closest('button[data-b]');if(b)buyBooster(b.dataset.b);});
+let shopBack='#home';
+function openShop(from){shopBack=from;hideScreens();$('#shop').hidden=false;renderShop();}
+$('#bShop').addEventListener('click',()=>openShop('#home'));
+$('#bShopBack').addEventListener('click',()=>{hideScreens();$(shopBack).hidden=false;if(shopBack==='#lobby')renderLobby();syncWalletUi();});
+function renderBoosts(){
+  const owned=Object.keys(BOOSTERS).filter(id=>(wallet.inv[id]|0)>0);
+  $('#boostCount').textContent=wallet.eq.length+'/'+MAX_EQUIP;
+  $('#boosts').innerHTML=owned.length?owned.map(id=>{const on=wallet.eq.includes(id);
+    return `<button class="bchip" id="eq-${id}" data-eq="${id}" aria-pressed="${on}">${BOOSTERS[id].icon}<span>${BOOSTERS[id].name}</span><em>×${wallet.inv[id]}</em></button>`;}).join('')
+    :'<p class="empty-note">Tu n\'as pas encore de booster. Achète-en avec tes crédits dans la boutique.</p>';
+}
+$('#boosts').addEventListener('click',e=>{const b=e.target.closest('button[data-eq]');if(!b)return;const id=b.dataset.eq,i=wallet.eq.indexOf(id);
+  if(i>=0)wallet.eq.splice(i,1);else{if(wallet.eq.length>=MAX_EQUIP){toast('2 boosters au maximum par manche');return;}wallet.eq.push(id);}saveWallet();renderBoosts();});
+$('#bLobbyShop').addEventListener('click',()=>openShop('#lobby'));
+// Au départ d'une manche : on consomme les boosters équipés
+function consumeBoosters(){
+  const used=[];for(const id of wallet.eq){if((wallet.inv[id]|0)>0){wallet.inv[id]--;used.push(id);}}
+  wallet.eq=wallet.eq.filter(id=>(wallet.inv[id]|0)>0);saveWallet();return used;
+}
+function applyBoostersAtStart(){
+  const me=R.me;R.boosters=me?consumeBoosters():[];if(!me)return;
+  if(R.boosters.includes('moteur')){me.baseV*=1.04;me.maxV=me.baseV;}
+  if(R.boosters.includes('drift'))me.driftMul=1.35;
+  if(R.boosters.length)setTimeout(()=>{if(R.active)toast('Boosters : '+R.boosters.map(id=>BOOSTERS[id].name).join(' + '));},300);
+}
+function applyBoostersAtGo(){
+  const me=R.me;if(!me||!R.boosters)return;
+  if(R.boosters.includes('depart')){me.boost=Math.max(me.boost,1.8);me.speed=Math.max(me.speed,20);showMsg('Départ canon !',1,true);}
+  if(R.boosters.includes('bouclier'))me.shield=15;
+  if(R.boosters.includes('objet')&&!me.item){setItem(me,['etoile','triple','missile'][Math.floor(Math.random()*3)]);setItemSlot(me.item);}
+}
+function awardCredits(msg){
+  const i=msg.res.findIndex(r=>r.pid===Net.myPid);if(i<0)return null;
+  const mult=Net.online?1.2:({facile:.7,normal:1,expert:1.4}[msg.opts.diff]||1),dbl=(R.boosters||[]).includes('double');
+  const gain=Math.round(CREDITS[Math.min(i,5)]*mult*(dbl?2:1)/5)*5;
+  wallet.credits+=gain;wallet.earned=(wallet.earned|0)+gain;saveWallet();
+  return {gain,place:i+1,dbl,mult};
+}
+syncWalletUi();
+
 /* ---------- Boucle ---------- */
 function playerFinished(){const r=R.me.rank+1;showMsg(r===1?'Victoire !':'Arrivée · '+ordTxt(r),2.6);sfx(r===1?880:520,.5,'triangle',.15);vibrate(200);setBanner('Arrivée ! Pilote automatique activé.');}
 function step(dt,t){
@@ -1600,7 +1721,7 @@ function step(dt,t){
   if(R.state==='countdown'){
     R.countdown-=dt;const c=Math.ceil(R.countdown-.6);
     if(c!==R.lastCount&&c>=1&&c<=3){R.lastCount=c;showMsg(String(c),.9);sfx(440,.18,'square',.12);}
-    if(R.countdown<=.6){R.state='race';showMsg('Partez !',1);sfx(880,.35,'square',.14);
+    if(R.countdown<=.6){R.state='race';showMsg('Partez !',1);sfx(880,.35,'square',.14);applyBoostersAtGo();
       if(R.mode==='patate')setTimeout(()=>{if(R.state==='race')showMsg('Gare à la bombe !',1.2,true);},1100);}
     for(const k of R.karts)k.local?updateKart(k,0,{steer:0,gas:false,brake:false,drift:false}):updateRemote(k,0);
   }else{

@@ -12,6 +12,7 @@ Jeu de course de karts en 3D pour Android : 6 pilotes, dérapages avec mini-turb
 - **4 circuits** : Circuit des Pins (forêt), Canyon Rouge (désert), Station Givrée (neige), Baie des Palmiers (plage).
 - Options : sens inverse, objets en folie, niveau des bots.
 - Musique de fond et effets sonores, chacun désactivable (accueil ou boutons en haut à droite pendant la course).
+- **Boutique** : chaque manche rapporte des crédits selon la place (100, 75, 55, 40, 30, 20 ; ×0,7 à ×1,4 selon le niveau des bots en solo, ×1,2 en ligne). Ils servent à acheter 7 boosters (Départ canon, Bouclier de départ, Poche pleine, Moteur gonflé, Trèfle, Pneus slick, Prime ×2), à équiper dans le salon (2 max) et consommés au départ de la manche. Crédits et boosters sont enregistrés sur l'appareil.
 - **Classement** : points par manche (10, 7, 5, 3, 2, 1), classement de la soirée, classement « entre amis » cumulé et records personnels (enregistrés sur l'appareil).
 
 ## Jeu en ligne
