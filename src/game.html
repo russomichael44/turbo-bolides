@@ -480,7 +480,7 @@ const MODES={
     icon:'<svg viewBox="0 0 48 48"><path d="M12 6v38" stroke="#f6f8fb" stroke-width="3.5" stroke-linecap="round"/><path d="M12 8h26l-5 8 5 8H12z" fill="#ffc23d"/><path d="M19 8v16M26 8v16M12 16h24" stroke="#0b1622" stroke-width="2.5"/></svg>'},
   gp:{name:'Grand Prix',desc:'Championnat de 4 courses avec points. Plusieurs coupes, plusieurs niveaux, un trophée à la clé.',
     icon:'<svg viewBox="0 0 48 48"><path d="M14 8h20v10a10 10 0 01-20 0z" fill="#ffc23d"/><path d="M14 11H7c0 7 3 11 8 12M34 11h7c0 7-3 11-8 12" stroke="#ffc23d" stroke-width="3" fill="none"/><path d="M21 28h6v7h-6z" fill="#c4861a"/><path d="M15 41h18l-2-6H17z" fill="#ffc23d"/></svg>'},
-  chrono:{name:'Contre-la-montre',desc:'Seul sur la piste : bats ton meilleur temps avec le fantôme de ton meilleur tour (solo).',
+  chrono:{name:'Contre-la-montre',desc:'Seul sur la piste, tours illimités : dès le 2e tour, bats le fantôme de ton meilleur tour (solo).',
     icon:'<svg viewBox="0 0 48 48"><circle cx="24" cy="27" r="15" fill="none" stroke="#f6f8fb" stroke-width="3.5"/><path d="M24 27V17M19 6h10M24 6v6" stroke="#ffc23d" stroke-width="3.5" stroke-linecap="round"/><path d="M24 27l7 5" stroke="#ff5a36" stroke-width="3.5" stroke-linecap="round"/></svg>'},
   bataille:{name:'Bataille',desc:'3 cœurs chacun et objets en pagaille. Chaque coup reçu coûte un cœur. Le dernier en piste gagne.',
     icon:'<svg viewBox="0 0 48 48"><path d="M24 41S7 30 7 18a9 9 0 0117-4 9 9 0 0117 4c0 12-17 23-17 23z" fill="#ff5a36"/><path d="M15 17a4 4 0 014-4" stroke="#ffd9cf" stroke-width="3" fill="none" stroke-linecap="round"/></svg>'},
@@ -870,7 +870,7 @@ function clearRace(){
 const alive=()=>R.karts.filter(k=>!k.out&&!k.gone);
 function startRound(msg){
   clearRace();
-  R.opts=msg.opts;R.mode=msg.opts.mode;R.round=msg.round;R.laps=(R.mode==='course'||R.mode==='chrono')?msg.opts.laps:0;
+  R.opts=msg.opts;R.mode=msg.opts.mode;R.round=msg.round;R.laps=R.mode==='course'?msg.opts.laps:(R.mode==='chrono'?1e9:0);
   setTrack(msg.opts.track||'pins');
   setWorld(R.mode==='ballons');
   setDirection(!!msg.opts.reverse&&!R.arena);
@@ -896,7 +896,7 @@ function startRound(msg){
   R.chrono=R.mode==='chrono'?{lap:-1,t0:0,pp:-5,laps:[],rec:[],runBest:1e9,runGhost:null,ghost:loadGhost(R.opts.track,!!R.opts.reverse),gm:null,gx:0,gz:0}:null;
   if(R.chrono){trackBoxes.forEach(b=>b.mesh.visible=false);boxes=[];
     const g=R.chrono.ghost;if(g){R.chrono.gm=makeGhost(g.p|0,KARTS[g.k]?g.k:'classique');R.chrono.gm.root.visible=false;}
-    setBanner(g?'Fantôme : meilleur tour '+fmt(g.t):'Pas encore de fantôme : réussis un tour !');}
+    setBanner(g?'Fantôme : meilleur tour '+fmt(g.t)+' · tours illimités, ⏸ pour terminer':'Tours illimités : ton fantôme apparaît dès le 2e tour. ⏸ pour terminer.');}
   else if(R.opts.gpCup)setBanner(CUPS[R.opts.gpCup].name+' · course '+(R.opts.gpRace+1)+'/'+CUPS[R.opts.gpCup].races.length);
   requestWake();
   applyBoostersAtStart();
@@ -930,23 +930,26 @@ function makeGhost(pilot,kartId){
 }
 // Contre-la-montre : temps de chaque tour, enregistrement du meilleur tour, lecture du fantôme
 function chronoStep(dt){
-  const C=R.chrono,me=R.me;if(!C||!me)return;
+  const C=R.chrono,me=R.me;if(!C||!me||R.ended)return;
   const lap=Math.floor(me.prog/N);
   if(lap>C.lap){
     const frac=clamp((lap*N-C.pp)/Math.max(1e-6,me.prog-C.pp),0,1),tc=R.time-dt*(1-frac);
     if(C.lap>=0){
-      const lt=tc-C.t0,ref=C.ghost?C.ghost.t:null;C.laps.push(lt);
-      const better=lt<Math.min(C.runBest,ref||1e9);
+      const lt=tc-C.t0,ref=C.ghost?C.ghost.t:null,better=lt<(ref||1e9);C.laps.push(lt);
       if(lt<C.runBest){C.runBest=lt;C.runGhost=C.rec.slice();}
-      if(C.laps.length<R.laps){showMsg(fmt(lt)+(ref?' ('+(lt<ref?'−':'+')+Math.abs(lt-ref).toFixed(2)+' s)':''),2.2,true);sfx(better?1046:660,.25,'triangle',.12);}
+      showMsg('Tour '+C.laps.length+' : '+fmt(lt)+(ref?' ('+(lt<ref?'−':'+')+Math.abs(lt-ref).toFixed(2)+' s)':''),2.4,true);sfx(better?1046:660,.25,'triangle',.12);
+      if(better){ // ton meilleur tour devient le fantôme du tour suivant
+        C.ghost={t:lt,s:C.rec.slice(),hz:CH_HZ,p:me.pilot,k:me.kart};
+        if(!C.gm){C.gm=makeGhost(me.pilot,me.kart);C.gm.root.visible=false;}
+        setBanner('Fantôme : ton meilleur tour '+fmt(lt));
+      }
     }
     C.lap=lap;C.t0=tc;C.rec=[];
   }
   C.pp=me.prog;
-  const finished=C.laps.length>=R.laps;
-  if(C.lap>=0&&!finished){const T=R.time-C.t0;while(C.rec.length/3/CH_HZ<=T&&C.rec.length<3*CH_HZ*400)C.rec.push(Math.round(me.x*10)/10,Math.round(me.z*10)/10,Math.round(me.h*100)/100);}
-  if(C.gm){
-    const G=C.ghost,vis=C.lap>=0&&!finished;C.gm.root.visible=vis;
+  if(C.lap>=0){const T=R.time-C.t0;while(C.rec.length/3/CH_HZ<=T&&C.rec.length<3*CH_HZ*400)C.rec.push(Math.round(me.x*10)/10,Math.round(me.z*10)/10,Math.round(me.h*100)/100);}
+  if(C.gm&&C.ghost){
+    const G=C.ghost,vis=C.lap>=0;C.gm.root.visible=vis;
     if(vis){const n=G.s.length/3,f=Math.min((R.time-C.t0)*CH_HZ,n-1),i=Math.floor(f),u=f-i,a=i*3,b=Math.min(n-1,i+1)*3;
       C.gx=G.s[a]+(G.s[b]-G.s[a])*u;C.gz=G.s[a+1]+(G.s[b+1]-G.s[a+1])*u;
       C.gm.root.position.set(C.gx,0,C.gz);C.gm.root.rotation.y=G.s[a+2]+wrapA(G.s[b+2]-G.s[a+2])*u;}
@@ -1215,7 +1218,7 @@ function hostPotato(dt){
 /* ---------- Fin de manche (hôte) ---------- */
 function hostCheckEnd(){
   if(R.ended)return;
-  if(R.mode==='chrono'){if(R.me&&R.me.finished)endRound();return;}
+  if(R.mode==='chrono')return;
   const act=R.karts.filter(k=>!k.gone);
   if(R.mode==='course'){
     const humans=act.filter(k=>!k.bot);
@@ -1232,7 +1235,7 @@ function endRound(){
   R.ended=true;
   if(R.mode==='chrono'){
     const C=R.chrono,k=R.me,total=C.laps.reduce((a,b)=>a+b,0);
-    const res=[{pid:k.pid,name:k.name,pilot:k.pilot,bot:false,pts:0,time:r2(total),fin:C.laps.length>=R.laps}];
+    const res=[{pid:k.pid,name:k.name,pilot:k.pilot,bot:false,pts:0,time:r2(total),fin:C.laps.length>=1}];
     const msg={t:'end',res,stand:Lobby.stand,mode:'chrono',opts:R.opts,round:R.round,gp:null,
       chrono:{laps:C.laps.map(r2),best:C.runBest<1e8?r2(C.runBest):0,total:r2(total),ghost:C.runGhost?{t:r2(C.runBest),s:C.runGhost,hz:CH_HZ,p:k.pilot,k:k.kart}:null}};
     toAll(msg);onEnd(msg);return;
@@ -1274,7 +1277,6 @@ function recordStats(msg){
     const c=msg.chrono,K=chronoKeys(msg.opts),out={chrono:true,laps:c.laps,best:c.best,total:c.total,oldTot:h.best[K.tot],oldLap:h.best[K.lap],newTotal:false,newLap:false};
     h.me.rounds++;h.modes.chrono=(h.modes.chrono||0)+1;
     if(msg.res[0].fin){
-      if(!out.oldTot||c.total<out.oldTot){h.best[K.tot]=c.total;out.newTotal=true;}
       if(c.best&&(!out.oldLap||c.best<out.oldLap)){h.best[K.lap]=c.best;out.newLap=true;}
       if(c.ghost){const old=loadGhost(msg.opts.track,msg.opts.reverse);if(!old||c.ghost.t<old.t)store.set('tb-g:'+msg.opts.track+(msg.opts.reverse?'r':'f'),c.ghost);}
     }
@@ -1578,9 +1580,9 @@ function updateHud(){
     setHTML(hA,'a','Tour <b>'+clamp(Math.floor(me.prog/N)+1,1,R.laps)+'/'+R.laps+'</b>');
     setHTML(hB,'b',fmt(R.time));
   }else if(R.mode==='chrono'&&R.chrono){
-    const C=R.chrono,done=C.laps.length>=R.laps,cur=done?C.laps.reduce((a,b)=>a+b,0):(C.lap>=0?R.time-C.t0:0);
+    const C=R.chrono,cur=C.lap>=0?R.time-C.t0:0;
     hPos.className='pos lapt';setHTML(hPos,'pos',fmt(cur));
-    setHTML(hA,'a','Tour <b>'+clamp(C.lap+1,1,R.laps)+'/'+R.laps+'</b>');
+    setHTML(hA,'a','Tour <b>'+Math.max(1,C.lap+1)+'</b>');
     const bl=Math.min(C.runBest,C.ghost?C.ghost.t:1e9);setHTML(hB,'b','Meilleur tour <b>'+(bl<1e8?fmt(bl):'–')+'</b>');
   }else if(R.mode==='ballons'){
     hPos.className='pos balloons';setHTML(hPos,'pos','●'.repeat(me.lives)+'<i>'+'●'.repeat(Math.max(0,3-me.lives))+'</i>');
@@ -1717,7 +1719,7 @@ function renderLobby(){
   renderBoosts();
   modesEl.querySelectorAll('.mode').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.m===o.mode));b.disabled=!host;});
   modesEl.querySelectorAll('.mode').forEach(b=>{b.hidden=b.dataset.m==='chrono'&&online;});
-  $('#lapsBox').hidden=!(o.mode==='course'||o.mode==='chrono');
+  $('#lapsBox').hidden=o.mode!=='course';
   $('#trackBox').hidden=o.mode==='ballons'||o.mode==='gp';
   $('#cupBox').hidden=o.mode!=='gp';$('#diffBox').hidden=chrono;
   cupEl.querySelectorAll('.cup').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.c===(o.cup||'foret')));b.disabled=!host;});
@@ -1758,6 +1760,7 @@ $('#bStart').addEventListener('click',()=>{initAudio();if(Net.isHost)hostStartRo
 $('#bLeave').addEventListener('click',()=>{leaveNet();clearRace();showHome();});
 let paused=false;
 function setPause(p){
+  if(p)$('#bQuit').textContent=R.mode==='chrono'?(R.chrono&&R.chrono.laps.length?'Terminer et voir mes temps':'Quitter'):'Quitter la manche';
   paused=p&&!Net.online;$('#pause').hidden=!p;
   $('#pauseSub').textContent=Net.online?'La course continue pendant que ce menu est ouvert.':'La course est en pause.';
   if(p)msgEl.classList.remove('show');
@@ -1766,6 +1769,7 @@ $('#bPause').addEventListener('click',()=>setPause(true));
 $('#bResume').addEventListener('click',()=>setPause(false));
 $('#bQuit').addEventListener('click',()=>{
   setPause(false);
+  if(R.mode==='chrono'&&R.chrono&&R.chrono.laps.length&&!R.ended&&Net.isHost){endRound();return;}
   if(!Net.online){clearRace();showLobby();return;}
   if(Net.isHost){toAll({t:'tolobby'});Lobby.racing=false;clearRace();showLobby();broadcastLobby();}
   else{leaveNet();clearRace();showHome();}
@@ -1775,16 +1779,16 @@ function showResults(msg,rec){
   hideScreens();$('#hud').hidden=true;
   const i=msg.res.findIndex(r=>r.pid===Net.myPid),gp=msg.gp,ch=msg.chrono,T=(TRACKS[msg.opts.track]||TRACKS.pins).name;
   let title=i===0?'Victoire !':i>=0&&i<3?'Podium : '+ordTxt(i+1):i>=0?'Arrivée : '+ordTxt(i+1):'Fin de la manche';
-  if(ch)title=rec&&(rec.newLap||rec.newTotal)?'Nouveau record !':msg.res[0].fin?'Chrono terminé':'Chrono arrêté';
+  if(ch)title=rec&&rec.newLap?'Nouveau record !':msg.res[0].fin?'Chrono terminé':'Chrono arrêté';
   if(gp&&gp.done){const rk=gpRank(gp.table,Net.myPid);title=rk===0?'Champion !':rk>=0&&rk<3?'Grand Prix : '+ordTxt(rk+1):'Grand Prix terminé';}
   $('#rTitle').textContent=title;
   const extra=(msg.opts.reverse&&msg.mode!=='ballons'?' · sens inverse':'')+(msg.opts.chaos?' · objets en folie':'');
   $('#rSub').textContent=gp?CUPS[gp.cup].name+' · course '+(msg.opts.gpRace+1)+'/'+gp.total+' · '+T+' · '+msg.opts.laps+' tours'+extra
-    :MODES[msg.mode].name+(msg.mode!=='ballons'?' · '+T:'')+(msg.mode==='course'||ch?' · '+msg.opts.laps+' tours':'')+extra+(ch?'':' · manche '+(msg.round||R.round));
+    :MODES[msg.mode].name+(msg.mode!=='ballons'?' · '+T:'')+(msg.mode==='course'?' · '+msg.opts.laps+' tours':'')+extra+(ch?'':' · manche '+(msg.round||R.round));
   if(ch){
     $('#rBodyLbl').textContent='Tes tours';
     $('#rBody').innerHTML=ch.laps.map((t,j)=>`<tr><td class="rk">${j+1}</td><td class="nm">Tour ${j+1}</td><td class="r mut">${fmt(t)}</td><td class="pts">${ch.best&&t===ch.best?'meilleur':''}</td></tr>`).join('')+
-      `<tr class="me"><td class="rk"></td><td class="nm"><b>Total</b></td><td class="r"><b>${fmt(ch.total)}</b></td><td></td></tr>`;
+      (ch.laps.length?`<tr class="me"><td class="rk"></td><td class="nm"><b>Total (${ch.laps.length} tour${ch.laps.length>1?'s':''})</b></td><td class="r"><b>${fmt(ch.total)}</b></td><td></td></tr>`:'<tr><td colspan="4" class="mut">Aucun tour terminé.</td></tr>');
   }else{
     $('#rBodyLbl').textContent='Cette manche';
     $('#rBody').innerHTML=msg.res.map((r,j)=>{
@@ -1794,7 +1798,7 @@ function showResults(msg,rec){
   $('#rStandBox').hidden=!!ch;$('#rStandLbl').textContent=gp?'Classement du Grand Prix':'Classement de la soirée';
   $('#rStand').innerHTML=standTable(gp?gp.table:msg.stand,Net.myPid);
   let t='';
-  if(ch&&rec){t=(rec.newTotal?'Nouveau record sur '+msg.opts.laps+' tours : '+fmt(rec.total):'Ton temps : '+fmt(rec.total)+(rec.oldTot?' · record : '+fmt(rec.oldTot):''))+' · '+(rec.newLap?'Nouveau meilleur tour : '+fmt(rec.best)+' (ton fantôme est mis à jour)':'Meilleur tour : '+fmt(rec.oldLap||rec.best));}
+  if(ch&&rec){t=!ch.laps.length?'Termine au moins un tour pour enregistrer un temps.':(rec.newLap?'Nouveau meilleur tour : '+fmt(rec.best)+' (ton fantôme est mis à jour)':'Meilleur tour de la session : '+fmt(rec.best)+' · ton record : '+fmt(rec.oldLap||rec.best));}
   else if(rec&&rec.key){t=(!rec.old||rec.time<rec.old)?'Nouveau record ('+rec.key+') : '+fmt(rec.time):'Ton temps : '+fmt(rec.time)+' · record ('+rec.key+') : '+fmt(rec.old);}
   if(rec&&rec.gpPlace)t+=(t?' · ':'')+'Trophée : '+ordTxt(rec.gpPlace)+' en '+msg.opts.diff;
   $('#rRec').textContent=t;$('#rRec').hidden=!t;
@@ -1917,7 +1921,7 @@ function awardCredits(msg){
 }
 function awardChrono(rec,msg){
   if(!msg.res[0].fin)return null;const dbl=(R.boosters||[]).includes('double');
-  const gain=(20+(rec.newLap?25:0)+(rec.newTotal?25:0))*(dbl?2:1);
+  const gain=(10*Math.min(msg.chrono.laps.length,5)+(rec.newLap?25:0))*(dbl?2:1);
   wallet.credits+=gain;wallet.earned=(wallet.earned|0)+gain;saveWallet();return {gain,place:1,dbl,bonus:0};
 }
 syncWalletUi();
