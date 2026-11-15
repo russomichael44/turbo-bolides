@@ -482,7 +482,7 @@ const MODES={
     icon:'<svg viewBox="0 0 48 48"><path d="M14 8h20v10a10 10 0 01-20 0z" fill="#ffc23d"/><path d="M14 11H7c0 7 3 11 8 12M34 11h7c0 7-3 11-8 12" stroke="#ffc23d" stroke-width="3" fill="none"/><path d="M21 28h6v7h-6z" fill="#c4861a"/><path d="M15 41h18l-2-6H17z" fill="#ffc23d"/></svg>'},
   chrono:{name:'Contre-la-montre',desc:'Seul sur la piste, tours illimités : dès le 2e tour, bats le fantôme de ton meilleur tour (solo).',
     icon:'<svg viewBox="0 0 48 48"><circle cx="24" cy="27" r="15" fill="none" stroke="#f6f8fb" stroke-width="3.5"/><path d="M24 27V17M19 6h10M24 6v6" stroke="#ffc23d" stroke-width="3.5" stroke-linecap="round"/><path d="M24 27l7 5" stroke="#ff5a36" stroke-width="3.5" stroke-linecap="round"/></svg>'},
-  bataille:{name:'Bataille',desc:'3 cœurs chacun et objets en pagaille. Chaque coup reçu coûte un cœur. Le dernier en piste gagne.',
+  bataille:{name:'Bataille',desc:'3 cœurs chacun, les cubes réapparaissent vite. Chaque coup reçu coûte un cœur. Le dernier en piste gagne.',
     icon:'<svg viewBox="0 0 48 48"><path d="M24 41S7 30 7 18a9 9 0 0117-4 9 9 0 0117 4c0 12-17 23-17 23z" fill="#ff5a36"/><path d="M15 17a4 4 0 014-4" stroke="#ffd9cf" stroke-width="3" fill="none" stroke-linecap="round"/></svg>'},
   ballons:{name:'Ballons',desc:'Dans l\'arène, 3 ballons chacun. Frôle un kart plus vite que lui pour lui voler un ballon. Un objet reçu en fait éclater un.',
     icon:'<svg viewBox="0 0 48 48"><path d="M17 30c2 6-1 9 2 13M31 30c-2 6 1 9-2 13" stroke="#a9bccf" stroke-width="2" fill="none"/><ellipse cx="17" cy="18" rx="9" ry="11" fill="#4cc9f0"/><ellipse cx="31" cy="18" rx="9" ry="11" fill="#ff5d8f"/><ellipse cx="28" cy="13" rx="2.5" ry="4" fill="rgba(255,255,255,.5)"/></svg>'},
@@ -1152,7 +1152,7 @@ function emit(e){applyEv(e);if(!Net.online)return;const m=Object.assign({t:'ev'}
 function applyEv(e){
   const k=R.karts[e.s!=null?e.s:e.v];
   switch(e.e){
-    case 'box':{const b=boxes[e.b];if(b){b.cool=2.5;b.mesh.visible=false;}break;}
+    case 'box':{const b=boxes[e.b];if(b){b.cool=R.opts&&R.opts.chaos?.8:R.mode==='bataille'?1.5:2.5;b.mesh.visible=false;}break;}
     case 'mis':spawnMissile(e);break;
     case 'rm':removeObj(e.id);break;
     case 'hit':removeObj(e.id);if(k&&!k.local&&R.mode==='bataille'){k.lives=e.lv;updateTag(k);}
@@ -2099,11 +2099,9 @@ function step(dt,t){
   }else{
     R.time+=dt;
     const me=R.me,prevLap=me?Math.floor(me.prog/N):0;
-    const chaos=(R.opts.chaos||R.mode==='bataille')&&R.mode!=='chrono';
     for(const k of R.karts){
       if(k.gone||k.out)continue;
       if(k.local){
-        if(chaos&&R.state==='race'){k.chaosT-=dt;if(k.chaosT<=0){k.chaosT=(R.mode==='bataille'?5:4)+Math.random()*2;giveItem(k);}}
         updateKart(k,dt,k.isPlayer&&R.state==='race'?playerInput(k,dt):aiInput(k,dt));
       }else updateRemote(k,dt);
     }
