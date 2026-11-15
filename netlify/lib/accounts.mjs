@@ -6,7 +6,9 @@ import { promisify } from 'node:util';
 const scryptAsync = promisify(scrypt);
 const BOOSTERS = ['depart', 'bouclier', 'objet', 'moteur', 'chance', 'drift', 'double'];
 const KARTS = ['classique', 'fusee', 'buggy', 'bolide'];
-const MODES = ['course', 'bataille', 'ballons', 'patate'];
+const MODES = ['course', 'gp', 'chrono', 'bataille', 'ballons', 'patate'];
+const CUPS = ['foret', 'desert', 'glace', 'eclair'];
+const DIFFS = ['facile', 'normal', 'expert'];
 const TOKEN_DAYS = 60;
 const MAX_FAILS = 8;
 const LOCK_MS = 15 * 60 * 1000;
@@ -44,7 +46,7 @@ const normCode = (c) => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 export function defaultSave() {
   return {
     v: 1, t: 0, name: '', pilot: 0, kart: 'classique', credits: 100, earned: 0, inv: {}, eq: [],
-    hall: { friends: {}, me: { rounds: 0, wins: 0, podiums: 0, pts: 0 }, best: {}, modes: {} },
+    hall: { friends: {}, me: { rounds: 0, wins: 0, podiums: 0, pts: 0 }, best: {}, modes: {}, gp: {} },
   };
 }
 
@@ -79,6 +81,12 @@ export function sanitizeSave(input, prev, now = Date.now()) {
   for (const [k, t] of bs) { const n = Number(t); if (Number.isFinite(n) && n > 0 && n < 3600) s.hall.best[String(k).slice(0, 60)] = Math.round(n * 100) / 100; }
   const md = h.modes && typeof h.modes === 'object' ? h.modes : {};
   for (const k of MODES) { const n = int(md[k], 0, 1e6); if (n) s.hall.modes[k] = n; }
+  const gp = h.gp && typeof h.gp === 'object' ? h.gp : {};
+  for (const c of CUPS) {
+    const e = gp[c];
+    if (!e || typeof e !== 'object') continue;
+    for (const d of DIFFS) { const n = int(e[d], 0, 6); if (n) (s.hall.gp[c] || (s.hall.gp[c] = {}))[d] = n; }
+  }
   return s;
 }
 
