@@ -308,7 +308,7 @@ tr.me td{background:rgba(255,194,61,.12)}
       </div>
     </div>
     <p class="rot">Tourne ton téléphone à l'horizontale pour mieux voir la piste.</p>
-    <p class="help">L'accélération est automatique. Pour déraper, maintiens <b>Dérapage</b> (ou <b>Espace</b>) en tournant, puis relâche pour le mini-turbo (étincelles bleues, puis orange). Les cristaux donnent un objet : Turbo, Triple turbo, Étoile filante (invincible), Éclair, Peaux de banane, Fumigène, Flaque d'huile, Missile ou Bouclier.</p>
+    <p class="help">L'accélération est automatique. Pour déraper, maintiens <b>Dérapage</b> (ou <b>Espace</b>) en tournant, puis relâche pour le mini-turbo (étincelles bleues, puis orange). Les cristaux donnent un objet : Turbo, Triple turbo, Étoile filante (invincible), Éclair, Peaux de banane, Fumigène, Carapace verte (tout droit, rebondit), Carapace rouge (téléguidée) ou Bouclier.</p>
   </div>
 </div>
 
@@ -796,8 +796,8 @@ function boomFx(x,z,color,y,size){const m=new THREE.Mesh(new THREE.SphereGeometr
 /* ---------- Objets ---------- */
 const ICON={
   turbo:'<svg viewBox="0 0 48 48"><path d="M9 11l13 13-13 13M24 11l13 13-13 13" stroke="#ffc23d" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  huile:'<svg viewBox="0 0 48 48"><path d="M24 5S11 21 11 30a13 13 0 0026 0C37 21 24 5 24 5z" fill="#2b2140" stroke="#b78cff" stroke-width="3"/><path d="M18 31a6 6 0 006 6" stroke="#b78cff" stroke-width="3" fill="none" stroke-linecap="round"/></svg>',
-  missile:'<svg viewBox="0 0 48 48"><g transform="rotate(45 24 24)"><rect x="19" y="12" width="10" height="22" rx="3" fill="#e9eef5"/><path d="M19 13Q24 1 29 13z" fill="#ff5a36"/><path d="M19 28l-6 9h6zM29 28l6 9h-6z" fill="#ff5a36"/><path d="M21 34h6l-3 8z" fill="#ffc23d"/></g></svg>',
+  verte:'<svg viewBox="0 0 48 48"><path d="M24 6C12 6 5 16 5 27h38C43 16 36 6 24 6z" fill="#2ecc71" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/><path d="M24 6v21M15 9.5l5 17.5M33 9.5l-5 17.5" stroke="#1b8f4d" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M6 33h36" stroke="#fff" stroke-width="6" stroke-linecap="round"/><path d="M10 40h28" stroke="#e8d9b0" stroke-width="4" stroke-linecap="round"/></svg>',
+  rouge:'<svg viewBox="0 0 48 48"><path d="M24 6C12 6 5 16 5 27h38C43 16 36 6 24 6z" fill="#e63946" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/><path d="M24 6v21M15 9.5l5 17.5M33 9.5l-5 17.5" stroke="#9d1c28" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M6 33h36" stroke="#fff" stroke-width="6" stroke-linecap="round"/><path d="M10 40h28" stroke="#e8d9b0" stroke-width="4" stroke-linecap="round"/></svg>',
   bouclier:'<svg viewBox="0 0 48 48"><path d="M24 5l15 6v11c0 10-7 17-15 21C16 39 9 32 9 22V11z" fill="rgba(76,201,240,.3)" stroke="#4cc9f0" stroke-width="3"/><path d="M17 24l5 5 9-10" stroke="#4cc9f0" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   etoile:'<svg viewBox="0 0 48 48"><path d="M3 31h10M2 23h8M6 39h9" stroke="#ffc23d" stroke-width="3" stroke-linecap="round" opacity=".7"/><path d="M29 5l5 10.5 11.5 1.5-8.4 8 2.1 11.4L29 31l-10.2 5.4 2.1-11.4-8.4-8 11.5-1.5z" fill="#ffd166" stroke="#ff9f1c" stroke-width="2.5" stroke-linejoin="round"/><circle cx="26" cy="20" r="1.8" fill="#7a4a00"/><circle cx="32" cy="20" r="1.8" fill="#7a4a00"/></svg>',
   triple:'<svg viewBox="0 0 48 48"><g fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l8 8-8 8" stroke="#ffc23d" opacity=".55"/><path d="M17 15l8 8-8 8" stroke="#ffc23d" opacity=".8"/><path d="M29 18l8 8-8 8" stroke="#ff9f1c"/></g></svg>',
@@ -805,22 +805,20 @@ const ICON={
   banane:'<svg viewBox="0 0 48 48"><path d="M9 14c2 14 12 24 30 22-3-2-5-4-6-7-9 1-15-5-17-16z" fill="#ffd60a" stroke="#d99a00" stroke-width="2.5" stroke-linejoin="round"/><path d="M9 14c0-3 1-5 3-7l3 1c-1 2-1 4 0 6z" fill="#7a4a00"/><path d="M36 36l5-1" stroke="#7a4a00" stroke-width="3" stroke-linecap="round"/></svg>',
   eclair:'<svg viewBox="0 0 48 48"><path d="M29 3L11 27h11l-4 18 20-26H26z" fill="#ffe066" stroke="#ff9f1c" stroke-width="2.5" stroke-linejoin="round"/><path d="M40 8l2-4M44 14l4-1M6 10l-3-3" stroke="#4cc9f0" stroke-width="2.5" stroke-linecap="round"/></svg>'
 };
-const ITEM_NAMES={turbo:'Turbo',huile:'Flaque d\'huile',missile:'Missile',bouclier:'Bouclier',etoile:'Étoile filante',triple:'Triple turbo',encre:'Fumigène',banane:'Peaux de banane',eclair:'Éclair'};
-const ITEM_KEYS=['turbo','huile','missile','bouclier','etoile','triple','encre','banane','eclair'];
+const ITEM_NAMES={turbo:'Turbo',verte:'Carapace verte',rouge:'Carapace rouge',bouclier:'Bouclier',etoile:'Étoile filante',triple:'Triple turbo',encre:'Fumigène',banane:'Peaux de banane',eclair:'Éclair'};
+const ITEM_KEYS=['turbo','verte','rouge','bouclier','etoile','triple','encre','banane','eclair'];
 function rollItem(rank,lucky){
-  // ordre : turbo, huile, missile, bouclier, étoile, triple turbo, encre, banane, éclair
+  // ordre : turbo, carapace verte, carapace rouge, bouclier, étoile, triple turbo, encre, banane, éclair
   let w;
   if(lucky)w=[2,1,3,1,3,3,1,1,2];
-  else if(R.mode==='bataille'||R.mode==='ballons')w=[2,2,4,2,1,1,2,3,1];
+  else if(R.mode==='bataille'||R.mode==='ballons')w=[2,3,4,2,1,1,2,3,1];
   else w=rank<=1?[2,4,1,3,0,0,1,3,0]:rank<=3?[3,3,3,2,1,2,2,3,1]:[3,1,4,1,3,3,2,2,3];
   let r=Math.random()*w.reduce((a,b)=>a+b);for(let i=0;i<w.length;i++){r-=w[i];if(r<0)return ITEM_KEYS[i];}return 'turbo';
 }
 function setItem(k,it){k.item=it;k.charges=(it==='triple'||it==='banane')?3:1;}
 const hazards=[],missiles=[];
-const oilGeo=new THREE.CircleGeometry(1.7,20).rotateX(-Math.PI/2),oilMat=new THREE.MeshBasicMaterial({color:0x1a1027});
-const oilRing=new THREE.RingGeometry(1.3,1.7,20).rotateX(-Math.PI/2),oilRingMat=new THREE.MeshBasicMaterial({color:0x6d4fa8,transparent:true,opacity:.7});
-const misBody=new THREE.CylinderGeometry(.32,.32,1.8,10).rotateX(Math.PI/2),misTip=new THREE.ConeGeometry(.32,.7,10).rotateX(Math.PI/2);
-const misMatA=new THREE.MeshLambertMaterial({color:0xe9eef5}),misMatB=new THREE.MeshLambertMaterial({color:0xff5a36});
+const shellDome=new THREE.SphereGeometry(.8,14,8,0,Math.PI*2,0,Math.PI/2),shellRim=new THREE.CylinderGeometry(.84,.84,.22,14);
+const shellMats={verte:new THREE.MeshLambertMaterial({color:0x2ecc71}),rouge:new THREE.MeshLambertMaterial({color:0xe63946})},shellRimMat=new THREE.MeshLambertMaterial({color:0xf4efe0});
 let idCounter=0;
 const banGeo=new THREE.TorusGeometry(.7,.2,8,14,Math.PI*1.15).rotateX(-Math.PI/2),banMat=new THREE.MeshLambertMaterial({color:0xffd60a}),banTipMat=new THREE.MeshLambertMaterial({color:0x6b4423}),banTipGeo=new THREE.SphereGeometry(.2,8,6);
 function spawnBanana(e){
@@ -830,17 +828,14 @@ function spawnBanana(e){
   g.position.set(e.x,.02,e.z);g.rotation.y=Math.random()*6.28;scene.add(g);
   const h={id:e.id,x:e.x,z:e.z,owner:e.o,t:0,mesh:g,idx:0,prog:0,lat:0,k:'ban'};if(!R.arena){h.idx=nearestIdx(e.x,e.z);track(h);}hazards.push(h);
 }
-function spawnOil(e){
-  if(hazards.some(h=>h.id===e.id))return;
-  const g=new THREE.Group();g.add(new THREE.Mesh(oilGeo,oilMat));const r=new THREE.Mesh(oilRing,oilRingMat);r.position.y=.01;g.add(r);
-  g.position.set(e.x,.06,e.z);scene.add(g);
-  const h={id:e.id,x:e.x,z:e.z,owner:e.o,t:0,mesh:g,idx:0,prog:0,lat:0};if(!R.arena){h.idx=nearestIdx(e.x,e.z);track(h);}hazards.push(h);
-}
 function spawnMissile(e){
   if(missiles.some(m=>m.id===e.id))return;
-  const g=new THREE.Group();g.add(new THREE.Mesh(misBody,misMatA));const t=new THREE.Mesh(misTip,misMatB);t.position.z=1.25;g.add(t);
-  const f=new THREE.Mesh(G.flame,M.flame);f.scale.set(.7,.7,.7);f.position.z=-1.4;g.add(f);g.position.y=.9;scene.add(g);
-  const m={id:e.id,x:e.x,z:e.z,h:e.h,target:e.tg,owner:e.o,life:7,idx:0,prog:0,lat:0,mesh:g};if(!R.arena){m.idx=nearestIdx(e.x,e.z);track(m);}missiles.push(m);
+  const kd=e.kd==='verte'?'verte':'rouge',g=new THREE.Group(),body=new THREE.Group();
+  const dome=new THREE.Mesh(shellDome,shellMats[kd]);dome.position.y=.1;body.add(dome);const rim=new THREE.Mesh(shellRim,shellRimMat);rim.position.y=.1;body.add(rim);
+  if(kd==='rouge'){const f=new THREE.Mesh(G.flame,M.flame);f.scale.set(.5,.5,.5);f.position.set(0,.3,-1.2);g.add(f);}
+  g.add(body);g.position.y=.8;scene.add(g);
+  const m={id:e.id,kd,x:e.x,z:e.z,h:e.h,target:e.tg,owner:e.o,life:kd==='verte'?9:8,age:0,bounces:0,spin:0,body,idx:0,prog:0,lat:0,mesh:g};
+  if(!R.arena){m.idx=nearestIdx(e.x,e.z);track(m);}missiles.push(m);
 }
 function removeObj(id){
   if(id==null)return;
@@ -969,13 +964,11 @@ function useItem(k){
   else if(it==='encre'){emit({e:'ink',o:k.slot});if(k.isPlayer)sfx(160,.35,'sawtooth',.1);}
   else if(it==='turbo'){k.boost=Math.max(k.boost,1.6);if(k.isPlayer)sfx(520,.25,'sawtooth',.12);}
   else if(it==='bouclier'){k.shield=7;if(k.isPlayer)sfx(660,.2,'triangle');}
-  else if(it==='huile'){emit({e:'oil',id:k.slot+'-'+(idCounter++),x:r2(k.x-fx_*3.4),z:r2(k.z-fz*3.4),o:k.slot});if(k.isPlayer)sfx(200,.15,'square');}
-  else if(it==='missile'){
-    let tgt=null;
-    if(R.arena){let bd=1e18;for(const o of R.karts){if(o===k||o.out||o.gone)continue;const dx=o.x-k.x,dz=o.z-k.z,d=dx*dx+dz*dz,fw=(dx*fx_+dz*fz)/Math.sqrt(d+1e-6),sc=d*(fw>.3?1:4);if(sc<bd){bd=sc;tgt=o;}}}
-    else tgt=R.karts.find(o=>o.rank===k.rank-1&&!o.out&&!o.gone&&!o.finished);
-    emit({e:'mis',id:k.slot+'-'+(idCounter++),x:r2(k.x+fx_*2.5),z:r2(k.z+fz*2.5),h:r2(k.h),tg:tgt?tgt.slot:-1,o:k.slot});
-    if(k.isPlayer)sfx(880,.3,'sawtooth',.1);
+  else if(it==='verte'||it==='rouge'){
+    let tgt=-1;
+    if(it==='rouge'){let bd=1e18;for(const o of R.karts){if(o===k||o.out||o.gone)continue;const dx=o.x-k.x,dz=o.z-k.z,d=dx*dx+dz*dz;if(d<bd){bd=d;tgt=o.slot;}}}
+    emit({e:'mis',kd:it,id:k.slot+'-'+(idCounter++),x:r2(k.x+fx_*2.5),z:r2(k.z+fz*2.5),h:r2(k.h),tg:tgt,o:k.slot});
+    if(k.isPlayer)sfx(it==='rouge'?880:620,.25,'sawtooth',.1);
   }
   if(k.isPlayer)setItemSlot(k.item);
 }
@@ -1001,7 +994,7 @@ function aiInput(k,dt){
     k.maxV=k.baseV*f;
     if(k.item){k.itemT-=dt;if(k.itemT<0){
       const it=k.item,behind=R.karts.some(o=>o.rank===k.rank+1&&!o.out&&!o.gone&&Math.hypot(o.x-k.x,o.z-k.z)<35);
-      if((it==='turbo'||it==='triple')&&Math.abs(curv)>.5)k.itemT=.4;else if(it==='missile'&&k.rank===0)k.itemT=1;else if(it==='encre'&&!behind)k.itemT=1;else if(it==='banane'&&!behind)k.itemT=.8;else if(it==='eclair'&&k.rank<2)k.itemT=1;else useItem(k);}}
+      if((it==='turbo'||it==='triple')&&Math.abs(curv)>.5)k.itemT=.4;else if(it==='verte'&&k.rank===0)k.itemT=1;else if(it==='encre'&&!behind)k.itemT=1;else if(it==='banane'&&!behind)k.itemT=.8;else if(it==='eclair'&&k.rank<2)k.itemT=1;else useItem(k);}}
   }
   const drift=Math.abs(curv)>.75&&k.speed>20&&Math.abs(steer)>.35;
   return {steer,gas:true,brake:Math.abs(curv)>1.5&&k.speed>27,drift};
@@ -1023,7 +1016,7 @@ function arenaAI(k,dt){
   if(k.bot){k.maxV=k.baseV;
     if(k.item){k.itemT-=dt;if(k.itemT<0){k.itemT=.5;let near=1e9,behind=false;
       for(const o of R.karts){if(o===k||o.out||o.gone)continue;const dx=o.x-k.x,dz=o.z-k.z,d=Math.hypot(dx,dz);near=Math.min(near,d);if(d<16&&dx*fx_+dz*fz<0)behind=true;}
-      const it=k.item;if(it==='bouclier'||(it==='missile'&&near<55)||(it==='huile'&&(behind||Math.random()<.2))||((it==='turbo'||it==='triple')&&g.kart&&Math.abs(diff)<.35)||it==='etoile'||(it==='encre'&&near<40)||(it==='banane'&&behind)||it==='eclair')useItem(k);}}}
+      const it=k.item;if(it==='bouclier'||((it==='verte'||it==='rouge')&&near<55)||((it==='turbo'||it==='triple')&&g.kart&&Math.abs(diff)<.35)||it==='etoile'||(it==='encre'&&near<40)||(it==='banane'&&behind)||it==='eclair')useItem(k);}}}
   return {steer,gas:true,brake:Math.abs(diff)>2.3&&k.speed>15,drift:Math.abs(diff)>1&&k.speed>18};
 }
 function giveItem(k){
@@ -1122,18 +1115,29 @@ function updateObjects(dt){
   for(let i=hazards.length-1;i>=0;i--){const h=hazards[i];if(!h)continue;h.t+=dt;
     if(h.t>45){scene.remove(h.mesh);hazards.splice(i,1);continue;}
     for(const k of R.karts){if(!k.local||k.out||k.gone)continue;if(h.owner===k.slot&&h.t<1)continue;const dx=k.x-h.x,dz=k.z-h.z;if(dx*dx+dz*dz<5){if(hitLocal(k,h.id))break;}}}
-  for(const m of missiles.slice()){if(!missiles.includes(m))continue;m.life-=dt;
-    let tx,tz;const T=R.karts[m.target];
-    if(T&&!T.out&&!T.gone){const dx=T.x-m.x,dz=T.z-m.z;if(R.arena||dx*dx+dz*dz<900){tx=T.x;tz=T.z;}}
-    if(tx===undefined){if(R.arena){tx=m.x+Math.sin(m.h)*10;tz=m.z+Math.cos(m.h)*10;}else{const j=(m.idx+10)%N;tx=SX[j];tz=SZ[j];}}
-    const dh=wrapA(Math.atan2(tx-m.x,tz-m.z)-m.h);m.h+=clamp(dh,-5*dt,5*dt);
-    m.x+=Math.sin(m.h)*(R.arena?50:62)*dt;m.z+=Math.cos(m.h)*(R.arena?50:62)*dt;
-    let crash;
-    if(R.arena)crash=Math.hypot(m.x-AX,m.z-AZ)>AR||PILLARS.some(p=>Math.hypot(m.x-p.x,m.z-p.z)<p.r);
-    else{track(m);crash=Math.abs(m.lat)>WALL+1;}
-    m.mesh.position.set(m.x,.9,m.z);m.mesh.rotation.y=m.h;
+  for(const m of missiles.slice()){if(!missiles.includes(m))continue;m.life-=dt;m.age+=dt;
+    const green=m.kd==='verte';
+    if(!green){ // carapace rouge : téléguidée sur le kart visé (le plus proche au départ)
+      let tx,tz;const T=R.karts[m.target];
+      if(T&&!T.out&&!T.gone){const dx=T.x-m.x,dz=T.z-m.z;if(R.arena||dx*dx+dz*dz<1600){tx=T.x;tz=T.z;}}
+      if(tx===undefined){if(R.arena){tx=m.x+Math.sin(m.h)*10;tz=m.z+Math.cos(m.h)*10;}else{const j=(m.idx+10)%N;tx=SX[j];tz=SZ[j];}}
+      const dh=wrapA(Math.atan2(tx-m.x,tz-m.z)-m.h);m.h+=clamp(dh,-5*dt,5*dt);
+    }
+    const sp=green?54:(R.arena?50:62);
+    m.x+=Math.sin(m.h)*sp*dt;m.z+=Math.cos(m.h)*sp*dt;
+    let crash=false,nx=0,nz=0;
+    if(R.arena){
+      const dx=m.x-AX,dz=m.z-AZ,d=Math.hypot(dx,dz);
+      if(d>AR-.5){crash=true;nx=-dx/d;nz=-dz/d;}
+      else for(const p of PILLARS){const px=m.x-p.x,pz=m.z-p.z,pd=Math.hypot(px,pz);if(pd<p.r+.5&&pd>1e-3){crash=true;nx=px/pd;nz=pz/pd;break;}}
+    }else{track(m);if(Math.abs(m.lat)>WALL+1){crash=true;const sg=m.lat>0?-1:1;nx=sg*RX[m.idx];nz=sg*RZ[m.idx];}}
+    if(crash&&green&&m.bounces<3){ // la carapace verte rebondit sur les murs (3 fois au plus)
+      const vx=Math.sin(m.h),vz=Math.cos(m.h),dp=vx*nx+vz*nz;m.h=Math.atan2(vx-2*dp*nx,vz-2*dp*nz);
+      m.x+=nx*1.8;m.z+=nz*1.8;m.bounces++;crash=false;if(!R.arena)track(m);
+    }
+    m.spin+=dt*(green?14:10);m.body.rotation.y=m.spin;m.mesh.position.set(m.x,.8,m.z);m.mesh.rotation.y=m.h;
     if(m.life<=0||crash){scene.remove(m.mesh);missiles.splice(missiles.indexOf(m),1);continue;}
-    for(const k of R.karts){if(!k.local||k.out||k.gone)continue;if(k.slot===m.owner&&m.life>6.4)continue;const dx=k.x-m.x,dz=k.z-m.z;if(dx*dx+dz*dz<5){hitLocal(k,m.id);break;}}}
+    for(const k of R.karts){if(!k.local||k.out||k.gone)continue;if(k.slot===m.owner&&m.age<.6)continue;const dx=k.x-m.x,dz=k.z-m.z;if(dx*dx+dz*dz<5){hitLocal(k,m.id);break;}}}
   for(let i=fx.length-1;i>=0;i--){const f=fx[i];f.t+=dt;const s=1+f.t*f.k;f.m.scale.set(s,s,s);f.m.material.opacity=Math.max(0,.9-f.t*1.8);if(f.t>.5){scene.remove(f.m);fx.splice(i,1);}}
 }
 function rankKarts(){
@@ -1149,7 +1153,6 @@ function applyEv(e){
   const k=R.karts[e.s!=null?e.s:e.v];
   switch(e.e){
     case 'box':{const b=boxes[e.b];if(b){b.cool=2.5;b.mesh.visible=false;}break;}
-    case 'oil':spawnOil(e);break;
     case 'mis':spawnMissile(e);break;
     case 'rm':removeObj(e.id);break;
     case 'hit':removeObj(e.id);if(k&&!k.local&&R.mode==='bataille'){k.lives=e.lv;updateTag(k);}
@@ -1851,11 +1854,11 @@ const BOOSTERS={
     icon:'<svg viewBox="0 0 48 48"><path d="M10 8v32" stroke="#f6f8fb" stroke-width="3" stroke-linecap="round"/><path d="M10 9h14v10H10z" fill="#f6f8fb"/><path d="M10 9h7v5h-7zM17 14h7v5h-7z" fill="#1d2330"/><path d="M24 26l8 8-8 8M33 26l8 8-8 8" stroke="#ffc23d" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
   bouclier:{name:'Bouclier de départ',price:70,desc:'Protégé de tout pendant les 15 premières secondes.',
     icon:'<svg viewBox="0 0 48 48"><path d="M24 5l15 6v11c0 10-7 17-15 21C16 39 9 32 9 22V11z" fill="rgba(76,201,240,.3)" stroke="#4cc9f0" stroke-width="3"/><text x="24" y="30" text-anchor="middle" font-size="14" font-weight="800" fill="#4cc9f0" font-family="Arial">15</text></svg>'},
-  objet:{name:'Poche pleine',price:90,desc:'Tu pars avec un objet puissant : étoile, triple turbo ou missile.',
+  objet:{name:'Poche pleine',price:90,desc:'Tu pars avec un objet puissant : étoile, triple turbo ou carapace rouge.',
     icon:'<svg viewBox="0 0 48 48"><path d="M24 4l14 20-14 20-14-20z" fill="rgba(125,249,255,.35)" stroke="#7df9ff" stroke-width="3" stroke-linejoin="round"/><path d="M24 15l6 9-6 9-6-9z" fill="#ffc23d"/></svg>'},
   moteur:{name:'Moteur gonflé',price:150,desc:'+4 % de vitesse maximale pendant toute la manche.',
     icon:'<svg viewBox="0 0 48 48"><path d="M8 34a17 17 0 1132 0" fill="none" stroke="#f6f8fb" stroke-width="4" stroke-linecap="round"/><path d="M8 34a17 17 0 0110-15" fill="none" stroke="#3ddc97" stroke-width="4" stroke-linecap="round"/><path d="M24 34l10-12" stroke="#ff5a36" stroke-width="4" stroke-linecap="round"/><circle cx="24" cy="34" r="4" fill="#ff5a36"/></svg>'},
-  chance:{name:'Trèfle',price:120,desc:'La roulette donne plus souvent étoile, triple turbo et missile.',
+  chance:{name:'Trèfle',price:120,desc:'La roulette donne plus souvent étoile, triple turbo et carapace rouge.',
     icon:'<svg viewBox="0 0 48 48"><g fill="#3ddc97"><circle cx="18" cy="16" r="8"/><circle cx="30" cy="16" r="8"/><circle cx="18" cy="28" r="8"/><circle cx="30" cy="28" r="8"/></g><path d="M24 24c0 8 2 14 6 18" stroke="#2a9d4a" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>'},
   drift:{name:'Pneus slick',price:100,desc:'Les mini-turbos de dérapage se chargent 35 % plus vite.',
     icon:'<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17" fill="#1d2330" stroke="#a9bccf" stroke-width="3"/><circle cx="24" cy="24" r="7" fill="#a9bccf"/><path d="M5 40c6-2 10-2 16 0M27 42c5-2 9-2 14 0" stroke="#ff8c1a" stroke-width="3" fill="none" stroke-linecap="round"/></svg>'},
@@ -1909,7 +1912,7 @@ function applyBoostersAtGo(){
   const me=R.me;if(!me||!R.boosters)return;
   if(R.boosters.includes('depart')){me.boost=Math.max(me.boost,1.8);me.speed=Math.max(me.speed,20);showMsg('Départ canon !',1,true);}
   if(R.boosters.includes('bouclier'))me.shield=15;
-  if(R.boosters.includes('objet')&&!me.item){setItem(me,['etoile','triple','missile'][Math.floor(Math.random()*3)]);setItemSlot(me.item);}
+  if(R.boosters.includes('objet')&&!me.item){setItem(me,['etoile','triple','rouge'][Math.floor(Math.random()*3)]);setItemSlot(me.item);}
 }
 function awardCredits(msg){
   const i=msg.res.findIndex(r=>r.pid===Net.myPid);if(i<0)return null;
@@ -2129,6 +2132,6 @@ function frame(now){
   renderer.render(scene,camera);
 }
 requestAnimationFrame(frame);
-window.__tb={R,Net,Lobby,emit,hazards,get boxCount(){return trackBoxes.filter(b=>b.mesh.visible).length;}};
+window.__tb={R,Net,Lobby,emit,hazards,missiles,ITEM_KEYS,get boxCount(){return trackBoxes.filter(b=>b.mesh.visible).length;}};
 })();
 </script>
