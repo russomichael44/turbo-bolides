@@ -834,7 +834,7 @@ function spawnMissile(e){
   const dome=new THREE.Mesh(shellDome,shellMats[kd]);dome.position.y=.1;body.add(dome);const rim=new THREE.Mesh(shellRim,shellRimMat);rim.position.y=.1;body.add(rim);
   if(kd==='rouge'){const f=new THREE.Mesh(G.flame,M.flame);f.scale.set(.5,.5,.5);f.position.set(0,.3,-1.2);g.add(f);}
   g.add(body);g.position.y=.8;scene.add(g);
-  const m={id:e.id,kd,x:e.x,z:e.z,h:e.h,target:e.tg,owner:e.o,life:kd==='verte'?9:8,age:0,bounces:0,spin:0,body,idx:0,prog:0,lat:0,mesh:g};
+  const m={id:e.id,kd,x:e.x,z:e.z,h:e.h,target:e.tg,owner:e.o,life:kd==='verte'?9:12,age:0,bounces:0,spin:0,body,idx:0,prog:0,lat:0,mesh:g};
   if(!R.arena){m.idx=nearestIdx(e.x,e.z);track(m);}missiles.push(m);
 }
 function removeObj(id){
@@ -965,9 +965,16 @@ function useItem(k){
   else if(it==='turbo'){k.boost=Math.max(k.boost,1.6);if(k.isPlayer)sfx(520,.25,'sawtooth',.12);}
   else if(it==='bouclier'){k.shield=7;if(k.isPlayer)sfx(660,.2,'triangle');}
   else if(it==='verte'||it==='rouge'){
-    let tgt=-1;
-    if(it==='rouge'){let bd=1e18;for(const o of R.karts){if(o===k||o.out||o.gone)continue;const dx=o.x-k.x,dz=o.z-k.z,d=dx*dx+dz*dz;if(d<bd){bd=d;tgt=o.slot;}}}
-    emit({e:'mis',kd:it,id:k.slot+'-'+(idCounter++),x:r2(k.x+fx_*2.5),z:r2(k.z+fz*2.5),h:r2(k.h),tg:tgt,o:k.slot});
+    let tgt=-1,back=false;
+    if(it==='rouge'){ // le kart le plus proche en suivant la piste (à vol d'oiseau dans l'arène)
+      let bd=1e18,bs=0;
+      for(const o of R.karts){if(o===k||o.out||o.gone)continue;let d,sg=1;
+        if(R.arena)d=(o.x-k.x)**2+(o.z-k.z)**2;else{let q=o.idx-k.idx;if(q>N/2)q-=N;if(q<-N/2)q+=N;d=Math.abs(q);sg=q;}
+        if(d<bd){bd=d;tgt=o.slot;bs=sg;}}
+      if(!R.arena&&bs<0)back=true;else if(R.arena&&tgt>=0){const o=R.karts[tgt];back=(o.x-k.x)*fx_+(o.z-k.z)*fz<0;}
+    }
+    const dir=back?-1:1;
+    emit({e:'mis',kd:it,id:k.slot+'-'+(idCounter++),x:r2(k.x+fx_*2.5*dir),z:r2(k.z+fz*2.5*dir),h:r2(back?wrapA(k.h+Math.PI):k.h),tg:tgt,o:k.slot});
     if(k.isPlayer)sfx(it==='rouge'?880:620,.25,'sawtooth',.1);
   }
   if(k.isPlayer)setItemSlot(k.item);
@@ -1118,12 +1125,19 @@ function updateObjects(dt){
   for(const m of missiles.slice()){if(!missiles.includes(m))continue;m.life-=dt;m.age+=dt;
     const green=m.kd==='verte';
     if(!green){ // carapace rouge : téléguidée sur le kart visé (le plus proche au départ)
-      let tx,tz;const T=R.karts[m.target];
-      if(T&&!T.out&&!T.gone){const dx=T.x-m.x,dz=T.z-m.z;if(R.arena||dx*dx+dz*dz<1600){tx=T.x;tz=T.z;}}
+      let tx,tz;const T=R.karts[m.target];m.near=1e9;
+      if(T&&!T.out&&!T.gone){
+        m.near=Math.hypot(T.x-m.x,T.z-m.z);
+        if(R.arena){tx=T.x;tz=T.z;}
+        else{let q=T.idx-m.idx;if(q>N/2)q-=N;if(q<-N/2)q+=N;
+          if(Math.abs(q)<=7&&Math.hypot(T.x-m.x,T.z-m.z)<16){tx=T.x;tz=T.z;}   // tout près : droit sur le kart
+          else{const st=Math.sign(q)*Math.min(Math.abs(q),9),j=((m.idx+st)%N+N)%N,lat=clamp(T.lat||0,-HALF+1.5,HALF-1.5)*(Math.abs(q)<35?1:.3);
+            tx=SX[j]+RX[j]*lat;tz=SZ[j]+RZ[j]*lat;}}            // sinon : on suit la route vers lui
+      }
       if(tx===undefined){if(R.arena){tx=m.x+Math.sin(m.h)*10;tz=m.z+Math.cos(m.h)*10;}else{const j=(m.idx+10)%N;tx=SX[j];tz=SZ[j];}}
-      const dh=wrapA(Math.atan2(tx-m.x,tz-m.z)-m.h);m.h+=clamp(dh,-5*dt,5*dt);
+      const dh=wrapA(Math.atan2(tx-m.x,tz-m.z)-m.h),tr=m.near<20?16:7;m.h+=clamp(dh,-tr*dt,tr*dt);
     }
-    const sp=green?54:(R.arena?50:62);
+    const sp=green?54:m.near<20?Math.max(36,22+m.near*2):(R.arena?50:62); // la rouge ralentit à l'approche pour ne pas tourner autour
     m.x+=Math.sin(m.h)*sp*dt;m.z+=Math.cos(m.h)*sp*dt;
     let crash=false,nx=0,nz=0;
     if(R.arena){
@@ -1135,9 +1149,15 @@ function updateObjects(dt){
       const vx=Math.sin(m.h),vz=Math.cos(m.h),dp=vx*nx+vz*nz;m.h=Math.atan2(vx-2*dp*nx,vz-2*dp*nz);
       m.x+=nx*1.8;m.z+=nz*1.8;m.bounces++;crash=false;if(!R.arena)track(m);
     }
+    if(crash&&!green){ // la rouge ne casse pas sur les murs : elle se replace et repart le long
+      m.x+=nx*1.6;m.z+=nz*1.6;
+      if(R.arena){const vx=Math.sin(m.h),vz=Math.cos(m.h),dp=vx*nx+vz*nz;m.h=Math.atan2(vx-dp*nx,vz-dp*nz);}
+      else{track(m);const t=Math.atan2(TX[m.idx],TZ[m.idx]);m.h=Math.abs(wrapA(t-m.h))<Math.PI/2?t:wrapA(t+Math.PI);}
+      crash=false;
+    }
     m.spin+=dt*(green?14:10);m.body.rotation.y=m.spin;m.mesh.position.set(m.x,.8,m.z);m.mesh.rotation.y=m.h;
     if(m.life<=0||crash){scene.remove(m.mesh);missiles.splice(missiles.indexOf(m),1);continue;}
-    for(const k of R.karts){if(!k.local||k.out||k.gone)continue;if(k.slot===m.owner&&m.age<.6)continue;const dx=k.x-m.x,dz=k.z-m.z;if(dx*dx+dz*dz<5){hitLocal(k,m.id);break;}}}
+    for(const k of R.karts){if(!k.local||k.out||k.gone)continue;if(k.slot===m.owner&&(m.age<.6||!green))continue;const dx=k.x-m.x,dz=k.z-m.z;if(dx*dx+dz*dz<(green?5:7)){hitLocal(k,m.id);break;}}}
   for(let i=fx.length-1;i>=0;i--){const f=fx[i];f.t+=dt;const s=1+f.t*f.k;f.m.scale.set(s,s,s);f.m.material.opacity=Math.max(0,.9-f.t*1.8);if(f.t>.5){scene.remove(f.m);fx.splice(i,1);}}
 }
 function rankKarts(){
@@ -2150,6 +2170,6 @@ if(location.hostname.endsWith('.netlify.app')){
   };
   new MutationObserver(moveBadge).observe(document.body,{childList:true,subtree:true});moveBadge();setTimeout(moveBadge,1500);setTimeout(moveBadge,5000);
 }
-window.__tb={R,Net,Lobby,emit,hazards,missiles,ITEM_KEYS,get boxCount(){return trackBoxes.filter(b=>b.mesh.visible).length;}};
+window.__tb={R,Net,Lobby,emit,hazards,missiles,ITEM_KEYS,useItem,get boxCount(){return trackBoxes.filter(b=>b.mesh.visible).length;}};
 })();
 </script>
