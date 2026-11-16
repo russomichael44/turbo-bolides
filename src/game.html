@@ -959,6 +959,23 @@ function chronoStep(dt){
       C.gm.root.position.set(C.gx,0,C.gz);C.gm.root.rotation.y=G.s[a+2]+wrapA(G.s[b+2]-G.s[a+2])*u;}
   }
 }
+// Cible de la carapace rouge : en priorité le kart devant ; si personne devant, celui juste derrière
+function redTarget(k,fx_,fz){
+  const others=R.karts.filter(o=>o!==k&&!o.out&&!o.gone);if(!others.length)return {tgt:-1,back:false};
+  const qOf=o=>{let q=o.idx-k.idx;if(q>N/2)q-=N;if(q<-N/2)q+=N;return q;};
+  let t=null;
+  if(R.arena){
+    let bd=1e18;for(const o of others){const dx=o.x-k.x,dz=o.z-k.z;if(dx*fx_+dz*fz<=0)continue;const d=dx*dx+dz*dz;if(d<bd){bd=d;t=o;}}
+    if(!t){bd=1e18;for(const o of others){const d=(o.x-k.x)**2+(o.z-k.z)**2;if(d<bd){bd=d;t=o;}}}
+    return {tgt:t.slot,back:(t.x-k.x)*fx_+(t.z-k.z)*fz<0};
+  }
+  if(R.mode==='course'){ // classement : le kart juste devant, sinon (1er) le kart juste derrière
+    const live=others.filter(o=>!o.finished);
+    t=live.filter(o=>o.rank<k.rank).sort((a,b)=>b.rank-a.rank)[0]||live.filter(o=>o.rank>k.rank).sort((a,b)=>a.rank-b.rank)[0]||null;
+  }
+  if(!t){let bf=1e9,bb=1e9,tf=null,tb=null;for(const o of others){const q=qOf(o);if(q>0&&q<bf){bf=q;tf=o;}if(q<=0&&-q<bb){bb=-q;tb=o;}}t=tf||tb;}
+  return {tgt:t.slot,back:qOf(t)<0};
+}
 function useItem(k){
   const it=k.item;if(!it||k.out)return;k.item=null;
   const fx_=Math.sin(k.h),fz=Math.cos(k.h);
@@ -976,11 +993,7 @@ function useItem(k){
   else if(it==='verte'||it==='rouge'){
     let tgt=-1,back=false;
     if(it==='rouge'){ // le kart le plus proche en suivant la piste (à vol d'oiseau dans l'arène)
-      let bd=1e18,bs=0;
-      for(const o of R.karts){if(o===k||o.out||o.gone)continue;let d,sg=1;
-        if(R.arena)d=(o.x-k.x)**2+(o.z-k.z)**2;else{let q=o.idx-k.idx;if(q>N/2)q-=N;if(q<-N/2)q+=N;d=Math.abs(q);sg=q;}
-        if(d<bd){bd=d;tgt=o.slot;bs=sg;}}
-      if(!R.arena&&bs<0)back=true;else if(R.arena&&tgt>=0){const o=R.karts[tgt];back=(o.x-k.x)*fx_+(o.z-k.z)*fz<0;}
+      const rt=redTarget(k,fx_,fz);tgt=rt.tgt;back=rt.back;
     }
     const dir=back?-1:1;
     emit({e:'mis',kd:it,id:k.slot+'-'+(idCounter++),x:r2(k.x+fx_*2.5*dir),z:r2(k.z+fz*2.5*dir),h:r2(back?wrapA(k.h+Math.PI):k.h),tg:tgt,o:k.slot});
