@@ -125,6 +125,15 @@ input.txt:focus{border-color:var(--sun);outline:none}
 .sbars i b{display:block;height:100%;background:var(--sun);border-radius:4px}
 .av{width:28px;height:28px;border-radius:50%;border:2px solid;background:#1d2a3a;flex:0 0 auto;vertical-align:middle;box-sizing:border-box}
 .av.sm{width:22px;height:22px}
+.standings{list-style:none;margin:2px 0 0;padding:4px 7px;background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;gap:1px;font-size:clamp(10px,2.3vmin,12.5px);font-weight:600;max-width:160px;font-variant-numeric:tabular-nums}
+.standings li{display:flex;align-items:center;gap:5px;white-space:nowrap;line-height:1.35}
+.standings b{font-family:var(--display);font-weight:400;color:var(--muted);width:1.1em;text-align:right}
+.standings i{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.standings span{overflow:hidden;text-overflow:ellipsis;max-width:92px}
+.standings em{font-style:normal;color:var(--muted);font-size:.9em;margin-left:auto;padding-left:4px}
+.standings li.me{color:var(--sun)}.standings li.me b{color:var(--sun)}
+.standings li.out{opacity:.45;text-decoration:line-through}
+@media (max-height:500px){#hMe{display:none}}
 .chip.me{display:flex;align-items:center;gap:6px;max-width:42vw;overflow:hidden;text-overflow:ellipsis}
 .players li span.n small{display:block;font-weight:400;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis}
 .seg{display:grid;grid-auto-columns:1fr;grid-auto-flow:column;gap:6px;background:var(--panel2);padding:4px;border-radius:14px}
@@ -253,6 +262,7 @@ tr.me td{background:rgba(255,194,61,.12)}
       <div class="chip" id="hA">Tour <b>1/3</b></div>
       <div class="chip" id="hB">0:00.00</div>
       <div class="chip" id="hSpd">0 km/h</div>
+      <ol class="standings" id="hStand" aria-label="Classement en direct"></ol>
     </div>
     <div class="center">
       <div class="slot" id="hItem" aria-label="Objet"></div>
@@ -1152,7 +1162,7 @@ function updateObjects(dt){
     if(!green){ // carapace rouge : téléguidée sur le kart visé (le plus proche au départ)
       let tx,tz;const T=R.karts[m.target];m.near=1e9;
       if(T&&!T.out&&!T.gone){
-        m.near=Math.hypot(T.x-m.x,T.z-m.z);
+        m.near=Math.hypot(T.x-m.x,T.z-m.z);m.tsp=Math.abs(T.speed||0);
         if(R.arena){tx=T.x;tz=T.z;}
         else{let q=T.idx-m.idx;if(q>N/2)q-=N;if(q<-N/2)q+=N;
           if(Math.abs(q)<=7&&Math.hypot(T.x-m.x,T.z-m.z)<16){tx=T.x;tz=T.z;}   // tout près : droit sur le kart
@@ -1162,7 +1172,7 @@ function updateObjects(dt){
       if(tx===undefined){if(R.arena){tx=m.x+Math.sin(m.h)*10;tz=m.z+Math.cos(m.h)*10;}else{const j=(m.idx+10)%N;tx=SX[j];tz=SZ[j];}}
       const dh=wrapA(Math.atan2(tx-m.x,tz-m.z)-m.h),tr=m.near<20?16:7;m.h+=clamp(dh,-tr*dt,tr*dt);
     }
-    const sp=green?54:m.near<20?Math.max(36,22+m.near*2):(R.arena?50:62); // la rouge ralentit à l'approche pour ne pas tourner autour
+    const sp=green?54:m.near<20?Math.max((m.tsp||0)+30,48):(R.arena?66:82); // la rouge va toujours bien plus vite que sa cible, un peu moins à l'approche pour ne pas tourner autour
     const px=m.x,pz=m.z;m.x+=Math.sin(m.h)*sp*dt;m.z+=Math.cos(m.h)*sp*dt;
     let crash=false,nx=0,nz=0;
     if(R.arena){
@@ -1658,6 +1668,16 @@ function updateHud(){
     const H=R.karts[B.holder];setHTML(hB,'b',H?'Bombe : '+esc(H.isPlayer?'toi':H.name):'Bombe en approche');
     if(!me.out){if(mine)setBanner('Tu as la bombe ! Fonce sur un adversaire','bomb');else setBanner(null);}
   }
+  // classement en direct
+  const stEl=$('#hStand');
+  if(R.mode==='chrono'||R.karts.filter(k=>!k.gone).length<2){stEl.hidden=true;}
+  else{stEl.hidden=false;const ord=R.karts.filter(k=>!k.gone).sort((a,b)=>a.rank-b.rank);
+    const key=ord.map(k=>k.slot+':'+(k.out?1:0)+':'+k.lives+':'+(k.finished?1:0)+':'+(R.mode==='patate'&&R.bomb.holder===k.slot?1:0)).join('|');
+    if(hudCache.stand!==key){hudCache.stand=key;
+      stEl.innerHTML=ord.map((k,i)=>{let ex='';
+        if(R.mode==='bataille')ex=k.out?'':'♥'+k.lives;else if(R.mode==='ballons')ex=k.out?'':'●'+k.lives;
+        else if(R.mode==='patate'&&R.bomb.holder===k.slot)ex='bombe';else if(k.finished)ex='arrivé';
+        return `<li class="${k.isPlayer?'me':''}${k.out?' out':''}"><b>${i+1}</b><i style="background:${hex(k.p.color)}"></i><span>${esc(k.isPlayer?'Toi':k.name)}</span>${ex?'<em>'+ex+'</em>':''}</li>`;}).join('');}}
   setHTML(hSpd,'spd',Math.round(Math.max(0,me.speed)*3.2)+' km/h');
   if(me.roll>0){hItem.classList.add('rolling');hItem.innerHTML=ICON[ITEM_KEYS[Math.floor(R.time*14)%ITEM_KEYS.length]];hudCache.item='roll';}
   mctx.clearRect(0,0,280,280);if(mapBg)mctx.drawImage(mapBg,0,0);

@@ -6,6 +6,7 @@ Jeu de course de karts en 3D pour Android : 6 pilotes, dérapages avec mini-turb
 
 - **Solo** contre des bots, ou **entre amis** en ligne (jusqu'à 6 joueurs) avec un code d'invitation de 5 caractères. Dans le salon, l'hôte ajoute ou retire chaque bot (bouton ×).
 - **Course** (2, 3 ou 5 tours), **Bataille** (3 cœurs, dernier en piste), **Ballons** (dans l'arène : 3 ballons, on vole un ballon en frôlant un kart plus lent, un objet reçu en fait éclater un), **Patate chaude** (une bombe passe de kart en kart au contact).
+- **Classement en direct** à gauche pendant la course (cœurs ou ballons en Bataille et Ballons, porteur de la bombe en Patate chaude).
 - **Fil des coups** : en haut à gauche, à côté de la position : « Bambou → toi » (rouge) ou « toi → Boulon » (vert), avec l'objet en dessous.
 - **Départ turbo** : pendant le compte à rebours, tapoter Dérapage (ou Espace) 3 fois donne un départ turbo, 6 fois un super départ.
 - **Dérapage** : maintenir le bouton Dérapage (ou Espace) en tournant, puis relâcher pour le mini-turbo.
