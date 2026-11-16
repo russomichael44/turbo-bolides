@@ -25,7 +25,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sky);outline-of
 .hud{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;
   padding-top:calc(env(safe-area-inset-top,0px) + 10px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
   padding-left:var(--gut-l);padding-right:var(--gut-r)}
-.top{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:10px}
+.top{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:10px;flex:1 1 0;min-height:0;overflow:hidden}
+.hud>.bottom{flex-shrink:0}
 .left{display:flex;flex-direction:column;gap:4px;align-items:flex-start;min-width:0;max-width:100%}
 .pos{font-family:var(--display);font-size:clamp(34px,11vmin,78px);line-height:.9;color:var(--sun);text-shadow:3px 3px 0 var(--hot),0 0 18px rgba(0,0,0,.4);white-space:nowrap}
 .pos sup{font-size:.42em;vertical-align:top;margin-left:2px}
@@ -38,8 +39,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sky);outline-of
 .slot{width:clamp(54px,15vmin,86px);aspect-ratio:1;border-radius:16px;background:var(--panel);border:2px solid var(--line);display:grid;place-items:center}
 .slot svg{width:70%;height:70%}
 .slot.rolling{border-color:var(--sun)}
-.posrow{display:flex;align-items:flex-start;gap:8px;min-width:0;max-width:100%}
-.feed{display:flex;flex-direction:column;align-items:flex-start;gap:3px;pointer-events:none;min-width:0;flex:1 1 auto;padding-top:2px}
+.posrow{display:flex;align-items:flex-start;gap:8px;min-width:0;max-width:100%;position:relative;z-index:2;height:calc(clamp(34px,11vmin,78px)*.9)}
+.feed{display:flex;flex-direction:column;align-items:flex-start;gap:3px;pointer-events:none;min-width:0;padding-top:2px;flex:1 1 auto}
+.feed:empty{display:none}
 .fi{display:flex;align-items:center;gap:5px;background:var(--panel);border:1.5px solid var(--line);border-radius:8px;padding:2px 8px 2px 3px;font-weight:700;font-size:clamp(11px,2.3vmin,13px);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;animation:fin .2s ease-out;transition:opacity .4s}
 .fi span{display:flex;flex-direction:column;min-width:0;line-height:1.15}
 .fi b,.fi small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -130,6 +132,7 @@ input.txt:focus{border-color:var(--sun);outline:none}
 .standings b{font-family:var(--display);font-weight:400;color:var(--muted);width:1.1em;text-align:right}
 .standings i{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
 .standings span{overflow:hidden;text-overflow:ellipsis;max-width:92px}
+@media (max-height:360px){.standings{padding:2px 6px;gap:0}.standings li{line-height:1.15}}
 .standings em{font-style:normal;color:var(--muted);font-size:.9em;margin-left:auto;padding-left:4px}
 .standings li.me{color:var(--sun)}.standings li.me b{color:var(--sun)}
 .standings li.out{opacity:.45;text-decoration:line-through}
