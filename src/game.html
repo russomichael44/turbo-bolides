@@ -38,6 +38,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sky);outline-of
 .slot{width:clamp(54px,15vmin,86px);aspect-ratio:1;border-radius:16px;background:var(--panel);border:2px solid var(--line);display:grid;place-items:center}
 .slot svg{width:70%;height:70%}
 .slot.rolling{border-color:var(--sun)}
+.feed{display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;max-width:min(60vw,420px)}
+.fi{display:flex;align-items:center;gap:6px;background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:3px 10px 3px 4px;font-weight:700;font-size:clamp(12px,2.6vmin,15px);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;animation:fin .2s ease-out;transition:opacity .4s}
+.fi span{overflow:hidden;text-overflow:ellipsis}
+.fi.bad{border-color:var(--hot);color:#ffd2c6}.fi.good{border-color:var(--ok);color:#c8f7e1}.fi.out{opacity:0}
+@keyframes fin{from{opacity:0;transform:translateY(-6px)}}
 .slot{position:relative}
 .slot .cnt{position:absolute;right:5px;bottom:2px;font-style:normal;font-family:var(--display);font-size:clamp(12px,3vmin,16px);color:var(--sun);text-shadow:1px 1px 0 #000}
 .pos.lapt{font-size:clamp(20px,6vmin,40px);line-height:1;letter-spacing:.02em}
@@ -74,7 +79,7 @@ body:not(.touch) .bottom .steer, body:not(.touch) .bottom .acts{display:none}
 body:not(.touch) .kbd{display:block}
 body:not(.touch) .bottom{justify-content:center}
 
-.msg{position:fixed;left:0;right:0;top:36%;text-align:center;pointer-events:none;font-family:var(--display);font-size:clamp(34px,12vmin,96px);color:var(--sun);text-shadow:4px 4px 0 var(--hot);opacity:0;transform:scale(.8);transition:opacity .2s,transform .2s;padding:0 16px}
+.msg{position:fixed;left:0;right:0;top:46%;text-align:center;pointer-events:none;font-family:var(--display);font-size:clamp(34px,12vmin,96px);color:var(--sun);text-shadow:4px 4px 0 var(--hot);opacity:0;transform:scale(.8);transition:opacity .2s,transform .2s;padding:0 16px}
 .msg.show{opacity:1;transform:scale(1)}
 .msg.small{font-size:clamp(22px,7vmin,52px)}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 14px;font-weight:600;font-size:14px;pointer-events:none;z-index:30;max-width:calc(100vw - 32px);text-align:center}
@@ -248,6 +253,7 @@ tr.me td{background:rgba(255,194,61,.12)}
     <div class="center">
       <div class="slot" id="hItem" aria-label="Objet"></div>
       <div class="banner" id="banner" hidden></div>
+      <div class="feed" id="feed" aria-live="polite"></div>
     </div>
     <div class="right">
       <div class="tbtns">
@@ -884,7 +890,7 @@ function startRound(msg){
   });
   Object.assign(R,{active:true,state:'countdown',countdown:3.6,lastCount:-1,time:0,startTaps:0,firstFin:null,lastHumanFin:null,ended:false,elim:[],sendT:0});
   R.bomb={holder:-1,tl:0,next:3,cool:0};
-  hideScreens();$('#hud').hidden=false;setBanner(null);$('#ink').hidden=true;
+  hideScreens();$('#hud').hidden=false;setBanner(null);$('#ink').hidden=true;$('#feed').innerHTML='';
   setItemSlot(null);hudCache={};
   $('#hMe').innerHTML=R.me?avatar(R.me.pilot,'sm')+esc(R.me.name):'';$('#hMe').hidden=!R.me;
   const t=camTarget();if(t)camPos.set(t.x-Math.sin(t.h)*9,5,t.z-Math.cos(t.h)*9);
@@ -898,21 +904,21 @@ function startRound(msg){
 }
 
 /* ---------- Physique ---------- */
-function hitLocal(k,id){
+function hitLocal(k,id,by,what){
   if(k.spin>0||k.out||k.gone)return false;
   if(k.star>0){if(id!=null)emit({e:'rm',id});return true;}
   if(k.shield>0){k.shield=0;if(id!=null)emit({e:'rm',id});if(k.isPlayer){showMsg('Bouclier !',.8,true);sfx(300,.15,'triangle');}return true;}
   k.spin=1.15;k.speed*=.3;k.drift=0;k.charge=0;
   if(R.mode==='bataille'){k.lives=Math.max(0,k.lives-1);updateTag(k);}
-  emit({e:'hit',v:k.slot,id:id==null?null:id,lv:k.lives});
+  emit({e:'hit',v:k.slot,id:id==null?null:id,lv:k.lives,by:by==null?null:by,w:what||null});
   if(k.isPlayer){showMsg(R.mode==='bataille'?(k.lives?'Aïe ! −1 cœur':'Éliminé !'):'Aïe !',1,true);sfx(120,.35,'sawtooth',.2);vibrate(120);}
   if(R.mode==='bataille'&&k.lives<=0)emit({e:'out',s:k.slot,time:R.time});
   return true;
 }
-function boltHit(t){
+function boltHit(t,by){
   if(t.star>0)return;
   if(t.shield>0){t.shield=0;if(t.isPlayer){showMsg('Bouclier !',.8,true);sfx(300,.15,'triangle');}return;}
-  t.shrinkT=6;hitLocal(t,null);
+  t.shrinkT=6;hitLocal(t,null,by,'éclair');
   if(t.isPlayer){showMsg('Éclair !',1.2,true);vibrate(200);}
 }
 let flashEl=null;
@@ -1118,10 +1124,12 @@ function collideKarts(){
       const dx=B.x-A.x,dz=B.z-A.z,d2=dx*dx+dz*dz;
       if(d2<4.4&&d2>1e-4){const d=Math.sqrt(d2),push=(2.1-d)/2*clamp(B.mass/A.mass,.6,1.6);A.x-=dx/d*push;A.z-=dz/d*push;A.speed*=.985;}}}
 }
+// distance² d'un point au segment parcouru pendant l'image (évite qu'un objet rapide traverse un kart)
+function segD2(x,z,ax,az,bx,bz){const vx=bx-ax,vz=bz-az,l=vx*vx+vz*vz;let t=l>0?((x-ax)*vx+(z-az)*vz)/l:0;t=t<0?0:t>1?1:t;const dx=x-(ax+vx*t),dz=z-(az+vz*t);return dx*dx+dz*dz;}
 function updateObjects(dt){
   for(let i=hazards.length-1;i>=0;i--){const h=hazards[i];if(!h)continue;h.t+=dt;
     if(h.t>45){scene.remove(h.mesh);hazards.splice(i,1);continue;}
-    for(const k of R.karts){if(!k.local||k.out||k.gone)continue;if(h.owner===k.slot&&h.t<1)continue;const dx=k.x-h.x,dz=k.z-h.z;if(dx*dx+dz*dz<5){if(hitLocal(k,h.id))break;}}}
+    for(const k of R.karts){if(!k.local||k.out||k.gone)continue;if(h.owner===k.slot&&h.t<1)continue;const dx=k.x-h.x,dz=k.z-h.z;if(dx*dx+dz*dz<5){if(hitLocal(k,h.id,h.owner,'peau de banane'))break;}}}
   for(const m of missiles.slice()){if(!missiles.includes(m))continue;m.life-=dt;m.age+=dt;
     const green=m.kd==='verte';
     if(!green){ // carapace rouge : téléguidée sur le kart visé (le plus proche au départ)
@@ -1138,7 +1146,7 @@ function updateObjects(dt){
       const dh=wrapA(Math.atan2(tx-m.x,tz-m.z)-m.h),tr=m.near<20?16:7;m.h+=clamp(dh,-tr*dt,tr*dt);
     }
     const sp=green?54:m.near<20?Math.max(36,22+m.near*2):(R.arena?50:62); // la rouge ralentit à l'approche pour ne pas tourner autour
-    m.x+=Math.sin(m.h)*sp*dt;m.z+=Math.cos(m.h)*sp*dt;
+    const px=m.x,pz=m.z;m.x+=Math.sin(m.h)*sp*dt;m.z+=Math.cos(m.h)*sp*dt;
     let crash=false,nx=0,nz=0;
     if(R.arena){
       const dx=m.x-AX,dz=m.z-AZ,d=Math.hypot(dx,dz);
@@ -1157,7 +1165,7 @@ function updateObjects(dt){
     }
     m.spin+=dt*(green?14:10);m.body.rotation.y=m.spin;m.mesh.position.set(m.x,.8,m.z);m.mesh.rotation.y=m.h;
     if(m.life<=0||crash){scene.remove(m.mesh);missiles.splice(missiles.indexOf(m),1);continue;}
-    for(const k of R.karts){if(!k.local||k.out||k.gone)continue;if(k.slot===m.owner&&(m.age<.6||!green))continue;const dx=k.x-m.x,dz=k.z-m.z;if(dx*dx+dz*dz<(green?5:7)){hitLocal(k,m.id);break;}}}
+    for(const k of R.karts){if(!k.local||k.out||k.gone)continue;if(k.slot===m.owner&&(m.age<.6||!green))continue;if(segD2(k.x,k.z,px,pz,m.x,m.z)<(green?5:7)){hitLocal(k,m.id,m.owner,green?'carapace verte':'carapace rouge');break;}}}
   for(let i=fx.length-1;i>=0;i--){const f=fx[i];f.t+=dt;const s=1+f.t*f.k;f.m.scale.set(s,s,s);f.m.material.opacity=Math.max(0,.9-f.t*1.8);if(f.t>.5){scene.remove(f.m);fx.splice(i,1);}}
 }
 function rankKarts(){
@@ -1176,17 +1184,18 @@ function applyEv(e){
     case 'mis':spawnMissile(e);break;
     case 'rm':removeObj(e.id);break;
     case 'hit':removeObj(e.id);if(k&&!k.local&&R.mode==='bataille'){k.lives=e.lv;updateTag(k);}
+      hitFeed(e);
       if(k&&R.mode==='ballons'&&Net.isHost&&k.inv<=0&&k.lives>0&&!k.out)balChange(k,null);break;
     case 'fin':if(k&&!k.finished){k.finished=true;k.finishTime=e.time;if(!k.bot)R.lastHumanFin=R.time;if(k.isPlayer)playerFinished();}break;
     case 'out':if(k&&!k.out){k.out=true;k.outTime=e.time;k.v.root.visible=false;boomFx(k.x,k.z);if(!R.elim.includes(k.slot))R.elim.push(k.slot);
       if(k.isPlayer)setBanner('Éliminé ! Tu regardes la fin de la manche.');else toast(k.name+' est éliminé');}break;
     case 'ban':spawnBanana(e);break;
-    case 'bolt':{const O=R.karts[e.o];showFlash();Jingle.zap();for(const t of R.karts){if(!t.local||t===O||t.out||t.gone)continue;boltHit(t);}break;}
-    case 'ram':{const V=R.karts[e.v];if(V&&V.local&&!(V.star>0))hitLocal(V,null);break;}
+    case 'bolt':{const O=R.karts[e.o];showFlash();Jingle.zap();for(const t of R.karts){if(!t.local||t===O||t.out||t.gone)continue;boltHit(t,e.o);}break;}
+    case 'ram':{const V=R.karts[e.v];if(V&&V.local&&!(V.star>0))hitLocal(V,null,e.by,'étoile filante');break;}
     case 'ink':{const O=R.karts[e.o];if(!O)break;
       for(const t of R.karts){if(!t.local||t===O||t.out||t.gone||t.star>0)continue;
         const hitIt=R.arena?Math.hypot(t.x-O.x,t.z-O.z)<45:t.rank>O.rank;if(!hitIt)continue;
-        if(t.isPlayer){showInk();sfx(140,.4,'sawtooth',.12);}else t.inkT=3;}
+        if(t.isPlayer){showInk();sfx(140,.4,'sawtooth',.12);feed(O,'Encre de '+O.name,'bad');}else t.inkT=3;}
       break;}
     case 'gone':if(k&&!k.gone){k.gone=true;k.v.root.visible=false;if(Net.isHost&&R.bomb.holder===k.slot){R.bomb.holder=-1;R.bomb.next=2;sendBomb();}}break;
   }
@@ -1643,6 +1652,19 @@ function updateHud(){
 }
 function setItemSlot(it){hItem.classList.remove('rolling');const n=(it==='triple'||it==='banane')&&R.me?R.me.charges:0;hItem.innerHTML=it?ICON[it]+(n>1?`<em class="cnt">×${n}</em>`:''):'';hudCache.item=it;}
 let inkTimer=null;
+// Fil des coups : qui a touché qui, affiché en haut de l'écran
+function feed(other,text,kind){
+  const el=$('#feed');if(!el)return;const d=document.createElement('div');d.className='fi '+kind;
+  d.innerHTML=(other?avatar(other.pilot,'sm'):'')+'<span>'+esc(text)+'</span>';el.prepend(d);
+  while(el.children.length>3)el.lastChild.remove();
+  setTimeout(()=>{d.classList.add('out');setTimeout(()=>d.remove(),400);},3200);
+}
+function hitFeed(e){
+  if(e.by==null||!R.me)return;const A=R.karts[e.by],V=R.karts[e.v];if(!A||!V)return;const w=e.w?' · '+e.w:'';
+  if(A===V){if(V.isPlayer)feed(V,'Touché par ton propre objet'+w,'bad');return;}
+  if(V.isPlayer)feed(A,A.name+' t\'a touché'+w,'bad');
+  else if(A.isPlayer)feed(V,'Tu as touché '+V.name+w,'good');
+}
 function showInk(){
   const el=$('#ink');let h='';for(let i=0;i<6;i++){const sz=26+Math.random()*30,x=10+Math.random()*80,y=12+Math.random()*60;h+=`<span style="width:${sz}vmin;height:${sz*.85}vmin;left:calc(${x}% - ${sz/2}vmin);top:calc(${y}% - ${sz/2}vmin)"></span>`;}
   el.innerHTML=h;el.hidden=false;el.style.opacity='1';clearTimeout(inkTimer);
